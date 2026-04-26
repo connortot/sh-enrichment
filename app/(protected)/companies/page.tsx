@@ -26,8 +26,12 @@ export default async function DashboardPage() {
     }
   })
 
-  // Sort by soonest expiry first (nulls last)
+  // Sort: Unknown Parent Company pinned first, then by soonest expiry (nulls last)
   enriched.sort((a, b) => {
+    const aUnknown = a.name === 'Unknown Parent Company'
+    const bUnknown = b.name === 'Unknown Parent Company'
+    if (aUnknown && !bUnknown) return -1
+    if (!aUnknown && bUnknown) return 1
     if (!a.soonest_expiry && !b.soonest_expiry) return 0
     if (!a.soonest_expiry) return 1
     if (!b.soonest_expiry) return -1
