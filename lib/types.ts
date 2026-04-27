@@ -22,6 +22,7 @@ export interface ParentCompany {
   updated_at: string
   // computed joins
   vessel_count?: number
+  urgent_vessel_count?: number
   soonest_expiry?: string | null
 }
 

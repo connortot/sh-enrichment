@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { ParentCompany, Vessel } from '@/lib/types'
+import { daysUntil } from '@/lib/types'
 import CompaniesTable from '@/components/CompaniesTable'
 
 export const dynamic = 'force-dynamic'
@@ -22,6 +23,10 @@ export default async function DashboardPage() {
     return {
       ...c,
       vessel_count: cvessels.length,
+      urgent_vessel_count: cvessels.filter(v => {
+        const d = daysUntil(v.expiration_date)
+        return d !== null && d <= 90
+      }).length,
       soonest_expiry: expiries[0] ?? null,
     }
   })
