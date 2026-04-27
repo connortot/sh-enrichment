@@ -27,20 +27,20 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
   const [filterUrgency, setFilterUrgency] = useState<string>('all')
   const [search, setSearch] = useState('')
 
-  // Derive unique locations from company data, excluding Unknown
+  // Derive unique regions from company data, excluding Unknown
   const locations = useMemo(() => {
     const locs = new Set<string>()
     for (const c of initialCompanies) {
       if (c.name === 'Unknown Parent Company') continue
-      if (c.location) locs.add(c.location)
+      if (c.region) locs.add(c.region)
     }
     return Array.from(locs).sort()
   }, [initialCompanies])
 
   const filtered = initialCompanies.filter(c => {
     if (filterLocation !== 'all') {
-      // Unknown Parent Company is always shown regardless of location filter
-      if (c.name !== 'Unknown Parent Company' && c.location !== filterLocation) return false
+      // Unknown Parent Company is always shown regardless of region filter
+      if (c.name !== 'Unknown Parent Company' && c.region !== filterLocation) return false
     }
     if (filterStatus !== 'all' && c.pipeline_status !== filterStatus) return false
     if (filterUrgency !== 'all') {
@@ -78,7 +78,7 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
       {/* Primary filter — Location pills */}
       {locations.length > 0 && (
         <div>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Filter by location</p>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Filter by region</p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilterLocation('all')}
@@ -88,7 +88,7 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              All locations
+              All regions
             </button>
             {locations.map(loc => (
               <button
