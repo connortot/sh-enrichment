@@ -200,23 +200,27 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
                   const tier = urgencyTier(c.soonest_expiry)
                   const days = daysUntil(c.soonest_expiry)
                   const urgentCount = c.urgent_vessel_count ?? 0
+                  const isUnknown = c.name === 'Unknown Parent Company'
                   return (
-                    <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={c.id} className={`hover:bg-slate-50 transition-colors ${isUnknown ? 'bg-slate-50/70' : ''}`}>
                       <td className="px-4 py-3">
                         <Link
                           href={`/companies/${c.id}`}
-                          className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                          className={`font-medium hover:underline ${isUnknown ? 'text-slate-500 italic' : 'text-blue-600 hover:text-blue-800'}`}
                         >
                           {c.name}
                         </Link>
-                        {c.needs_review && (
+                        {c.needs_review && !isUnknown && (
                           <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">
                             Review
                           </span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-slate-600">
-                        {c.location || <span className="text-slate-400">—</span>}
+                        {isUnknown
+                          ? <span className="text-slate-400 italic">—</span>
+                          : c.location || <span className="text-slate-400">—</span>
+                        }
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-medium text-xs">
@@ -256,31 +260,37 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <select
-                          value={c.pipeline_status}
-                          onChange={e => updateStatus(c.id, e.target.value as PipelineStatus)}
-                          className={`text-xs font-medium px-2 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 ${PIPELINE_COLOURS[c.pipeline_status]}`}
-                        >
-                          {STATUSES.map(s => (
-                            <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
-                          ))}
-                        </select>
+                        {isUnknown ? <span className="text-slate-400">—</span> : (
+                          <select
+                            value={c.pipeline_status}
+                            onChange={e => updateStatus(c.id, e.target.value as PipelineStatus)}
+                            className={`text-xs font-medium px-2 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 ${PIPELINE_COLOURS[c.pipeline_status]}`}
+                          >
+                            {STATUSES.map(s => (
+                              <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
+                            ))}
+                          </select>
+                        )}
                       </td>
                       <td className="px-4 py-3">
-                        <input
-                          type="date"
-                          defaultValue={c.last_contact_date ?? ''}
-                          onBlur={e => updateDate(c.id, 'last_contact_date', e.target.value)}
-                          className="text-xs text-slate-700 border border-transparent hover:border-slate-300 focus:border-blue-400 rounded px-1.5 py-1 focus:outline-none w-32"
-                        />
+                        {!isUnknown && (
+                          <input
+                            type="date"
+                            defaultValue={c.last_contact_date ?? ''}
+                            onBlur={e => updateDate(c.id, 'last_contact_date', e.target.value)}
+                            className="text-xs text-slate-700 border border-transparent hover:border-slate-300 focus:border-blue-400 rounded px-1.5 py-1 focus:outline-none w-32"
+                          />
+                        )}
                       </td>
                       <td className="px-4 py-3">
-                        <input
-                          type="date"
-                          defaultValue={c.next_contact_date ?? ''}
-                          onBlur={e => updateDate(c.id, 'next_contact_date', e.target.value)}
-                          className="text-xs text-slate-700 border border-transparent hover:border-slate-300 focus:border-blue-400 rounded px-1.5 py-1 focus:outline-none w-32"
-                        />
+                        {!isUnknown && (
+                          <input
+                            type="date"
+                            defaultValue={c.next_contact_date ?? ''}
+                            onBlur={e => updateDate(c.id, 'next_contact_date', e.target.value)}
+                            className="text-xs text-slate-700 border border-transparent hover:border-slate-300 focus:border-blue-400 rounded px-1.5 py-1 focus:outline-none w-32"
+                          />
+                        )}
                       </td>
                     </tr>
                   )
