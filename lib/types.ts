@@ -11,7 +11,6 @@ export interface ParentCompany {
   id: string
   name: string
   location: string | null
-  region: string | null
   confidence: number | null
   needs_review: boolean
   pipeline_status: PipelineStatus
@@ -20,22 +19,33 @@ export interface ParentCompany {
   notes: string | null
   created_at: string
   updated_at: string
-  // computed joins
+  // computed from views
   vessel_count?: number
   urgent_vessel_count?: number
   soonest_expiry?: string | null
+  is_in_scope?: boolean
+}
+
+export interface Operator {
+  id: string
+  name: string
+  operator_location: string | null
+  parent_company_id: string | null
+  created_at: string
+  // computed
+  vessel_count?: number
 }
 
 export interface Vessel {
   id: string
   name: string
   vin: string
+  operator_id: string | null
   vessel_type_code: string | null
   vessel_type_desc: string | null
   gross_tonnage: number | null
   case_control_id: string | null
   case_examiner_id: string | null
-  operator_name: string | null
   effective_date: string | null
   expiration_date: string | null
   insurance_cancel_flag: boolean
@@ -43,7 +53,8 @@ export interface Vessel {
   vessel_region: string | null
   flag_confidence: number | null
   needs_review: boolean
-  parent_company_id: string | null
+  // joined
+  operator?: { name: string } | null
 }
 
 export interface Contact {

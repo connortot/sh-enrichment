@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { ParentCompany, Vessel } from '@/lib/types'
-import { daysUntil } from '@/lib/types'
+import type { ParentCompany } from '@/lib/types'
 import CompaniesTable from '@/components/CompaniesTable'
 
 export const dynamic = 'force-dynamic'
@@ -8,35 +7,32 @@ export const dynamic = 'force-dynamic'
 export default async function DashboardPage() {
   const supabase = await createClient()
 
-  const [{ data: companies }, { data: vessels }] = await Promise.all([
+  const [
+    { data: companies },
+    { data: stats },
+    { data: scopeRows },
+  ] = await Promise.all([
     supabase.from('parent_companies').select('*').order('name'),
-    supabase.from('vessels').select('id, parent_company_id, expiration_date'),
+    supabase.from('company_vessel_stats').select('*'),
+    supabase.from('asian_scope_companies').select('id'),
   ])
 
-  // Enrich companies with vessel count + soonest COFR expiry
+  const statsMap = new Map((stats ?? []).map(s => [s.parent_company_id, s]))
+  const inScopeIds = new Set((scopeRows ?? []).map((r: { id: string }) => r.id))
+
   const enriched: ParentCompany[] = (companies ?? []).map(c => {
-    const cvessels = (vessels ?? []).filter(v => v.parent_company_id === c.id)
-    const expiries = cvessels
-      .map(v => v.expiration_date)
-      .filter(Boolean)
-      .sort() as string[]
+    const s = statsMap.get(c.id)
     return {
       ...c,
-      vessel_count: cvessels.length,
-      urgent_vessel_count: cvessels.filter(v => {
-        const d = daysUntil(v.expiration_date)
-        return d !== null && d <= 90
-      }).length,
-      soonest_expiry: expiries[0] ?? null,
+      vessel_count:        Number(s?.vessel_count ?? 0),
+      urgent_vessel_count: Number(s?.urgent_vessel_count ?? 0),
+      soonest_expiry:      s?.soonest_expiry ?? null,
+      is_in_scope:         inScopeIds.has(c.id),
     }
   })
 
-  // Sort: Unknown Parent Company pinned first, then by soonest expiry (nulls last)
+  // Sort by soonest expiry (nulls last), no Unknown sentinel needed
   enriched.sort((a, b) => {
-    const aUnknown = a.name === 'Unknown Parent Company'
-    const bUnknown = b.name === 'Unknown Parent Company'
-    if (aUnknown && !bUnknown) return -1
-    if (!aUnknown && bUnknown) return 1
     if (!a.soonest_expiry && !b.soonest_expiry) return 0
     if (!a.soonest_expiry) return 1
     if (!b.soonest_expiry) return -1

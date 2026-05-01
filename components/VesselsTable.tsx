@@ -43,8 +43,8 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
                     )}
                   </td>
                   <td className="px-4 py-3 text-slate-600">{v.vessel_region ?? '—'}</td>
-                  <td className="px-4 py-3 text-slate-600 max-w-48 truncate" title={v.operator_name ?? ''}>
-                    {v.operator_name ?? '—'}
+                  <td className="px-4 py-3 text-slate-600 max-w-48 truncate" title={v.operator?.name ?? ''}>
+                    {v.operator?.name ?? '—'}
                   </td>
                   <td className="px-4 py-3 text-slate-600">
                     {v.effective_date
