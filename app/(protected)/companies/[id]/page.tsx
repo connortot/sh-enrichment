@@ -4,6 +4,7 @@ import Link from 'next/link'
 import CrmPanel from '@/components/CrmPanel'
 import VesselsTable from '@/components/VesselsTable'
 import ContactsSection from '@/components/ContactsSection'
+import CompanyActions from '@/components/CompanyActions'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,7 +34,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ id: st
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">{company.name}</h1>
           <p className="text-slate-500 text-sm mt-1">
-            {[company.location, company.region].filter(Boolean).join(' · ') || 'Location unknown'}
+            {company.location || 'Location unknown'}
             {company.needs_review && (
               <span className="ml-3 bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full font-medium">
                 Needs Review
@@ -41,6 +42,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ id: st
             )}
           </p>
         </div>
+        <CompanyActions company={company} />
       </div>
 
       {/* CRM Panel */}

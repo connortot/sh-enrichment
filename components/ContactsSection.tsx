@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Contact } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
@@ -14,6 +14,9 @@ const EMPTY_FORM: ContactFormData = {
   city: null, state: null, country: null,
 }
 
+type SortField = 'name' | 'title' | 'location'
+type SortDir   = 'asc' | 'desc'
+
 export default function ContactsSection({
   companyId,
   initialContacts,
@@ -24,11 +27,63 @@ export default function ContactsSection({
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [contacts, setContacts] = useState<Contact[]>(initialContacts)
-  const [modal, setModal] = useState<'add' | 'edit' | null>(null)
-  const [editing, setEditing] = useState<Contact | null>(null)
-  const [form, setForm] = useState<ContactFormData>(EMPTY_FORM)
-  const [saving, setSaving] = useState(false)
+  const [modal, setModal]       = useState<'add' | 'edit' | null>(null)
+  const [editing, setEditing]   = useState<Contact | null>(null)
+  const [form, setForm]         = useState<ContactFormData>(EMPTY_FORM)
+  const [saving, setSaving]     = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+
+  const [filterLocation, setFilterLocation] = useState('all')
+  const [filterTitle,    setFilterTitle]    = useState('all')
+  const [sortField,      setSortField]      = useState<SortField>('name')
+  const [sortDir,        setSortDir]        = useState<SortDir>('asc')
+
+  const locationOptions = useMemo(() => {
+    const locs = new Set<string>()
+    for (const c of contacts) {
+      const loc = [c.city, c.country].filter(Boolean).join(', ')
+      if (loc) locs.add(loc)
+    }
+    return [...locs].sort()
+  }, [contacts])
+
+  const titleOptions = useMemo(() =>
+    [...new Set(contacts.map(c => c.title).filter(Boolean) as string[])].sort(),
+  [contacts])
+
+  const visible = useMemo(() => {
+    let list = contacts
+    if (filterLocation !== 'all') {
+      list = list.filter(c => [c.city, c.country].filter(Boolean).join(', ') === filterLocation)
+    }
+    if (filterTitle !== 'all') {
+      list = list.filter(c => c.title === filterTitle)
+    }
+    return list
+  }, [contacts, filterLocation, filterTitle])
+
+  const sorted = useMemo(() => {
+    return [...visible].sort((a, b) => {
+      let cmp = 0
+      if (sortField === 'name') {
+        const aName = [a.first_name, a.last_name].filter(Boolean).join(' ')
+        const bName = [b.first_name, b.last_name].filter(Boolean).join(' ')
+        cmp = aName.localeCompare(bName)
+      } else if (sortField === 'title') {
+        cmp = (a.title ?? '').localeCompare(b.title ?? '')
+      } else if (sortField === 'location') {
+        const aLoc = [a.city, a.country].filter(Boolean).join(', ')
+        const bLoc = [b.city, b.country].filter(Boolean).join(', ')
+        cmp = aLoc.localeCompare(bLoc)
+      }
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+  }, [visible, sortField, sortDir])
+
+  function toggleSort(field: SortField) {
+    if (field === sortField) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortField(field); setSortDir('asc') }
+  }
 
   function openAdd() {
     setForm(EMPTY_FORM)
@@ -93,6 +148,18 @@ export default function ContactsSection({
     startTransition(() => router.refresh())
   }
 
+  function SortBtn({ field, label }: { field: SortField; label: string }) {
+    const active = sortField === field
+    return (
+      <th
+        className="text-left px-4 py-3 font-medium text-slate-600 cursor-pointer hover:text-slate-900 select-none"
+        onClick={() => toggleSort(field)}
+      >
+        {label} <span className={active ? '' : 'text-slate-300'}>{active ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}</span>
+      </th>
+    )
+  }
+
   return (
     <>
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -105,21 +172,63 @@ export default function ContactsSection({
           </div>
         ) : (
           <>
+            {/* Filter/sort bar */}
+            <div className="px-4 py-3 border-b border-slate-100 flex flex-wrap gap-2 items-center bg-slate-50">
+              {locationOptions.length > 0 && (
+                <select
+                  value={filterLocation}
+                  onChange={e => setFilterLocation(e.target.value)}
+                  className="px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="all">All locations</option>
+                  {locationOptions.map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+              )}
+              {titleOptions.length > 0 && (
+                <select
+                  value={filterTitle}
+                  onChange={e => setFilterTitle(e.target.value)}
+                  className="px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="all">All titles</option>
+                  {titleOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              )}
+              {(filterLocation !== 'all' || filterTitle !== 'all') && (
+                <button
+                  onClick={() => { setFilterLocation('all'); setFilterTitle('all') }}
+                  className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  Clear filters
+                </button>
+              )}
+              <span className="ml-auto text-xs text-slate-400">
+                {sorted.length} of {contacts.length}
+              </span>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50">
-                    <th className="text-left px-4 py-3 font-medium text-slate-600">Name</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-600">Title</th>
+                    <SortBtn field="name" label="Name" />
+                    <SortBtn field="title" label="Title" />
                     <th className="text-left px-4 py-3 font-medium text-slate-600">Email</th>
                     <th className="text-left px-4 py-3 font-medium text-slate-600">LinkedIn</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-600">Location</th>
+                    <SortBtn field="location" label="Location" />
                     <th className="text-left px-4 py-3 font-medium text-slate-600">Seniority</th>
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {contacts.map(c => (
+                  {sorted.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="text-center py-8 text-slate-400 text-sm">
+                        No contacts match your filters
+                      </td>
+                    </tr>
+                  )}
+                  {sorted.map(c => (
                     <tr key={c.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-3 font-medium text-slate-900">
                         {[c.first_name, c.last_name].filter(Boolean).join(' ') || '—'}
@@ -222,8 +331,8 @@ export default function ContactsSection({
                 <Field label="Country" value={form.country ?? ''} onChange={field('country')} />
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Seniority"      value={form.seniority       ?? ''} onChange={field('seniority')} />
-                <Field label="Departments"    value={form.departments      ?? ''} onChange={field('departments')} />
+                <Field label="Seniority"   value={form.seniority    ?? ''} onChange={field('seniority')} />
+                <Field label="Departments" value={form.departments   ?? ''} onChange={field('departments')} />
               </div>
             </div>
 

@@ -11,8 +11,6 @@ export interface ParentCompany {
   id: string
   name: string
   location: string | null
-  region: string | null
-  confidence: number | null
   needs_review: boolean
   pipeline_status: PipelineStatus
   last_contact_date: string | null
@@ -36,12 +34,11 @@ export interface Vessel {
   case_control_id: string | null
   case_examiner_id: string | null
   operator_name: string | null
+  operator_location: string | null
   effective_date: string | null
   expiration_date: string | null
   insurance_cancel_flag: boolean
   flag: string | null
-  vessel_region: string | null
-  flag_confidence: number | null
   needs_review: boolean
   parent_company_id: string | null
 }
@@ -92,22 +89,27 @@ export function daysUntil(dateStr: string | null | undefined): number | null {
   return Math.ceil(diff / (1000 * 60 * 60 * 24))
 }
 
+export type UrgencyTier = 'expired' | 'urgent' | 'upcoming' | 'clear'
+
 /** Urgency tier for a COFR expiration date. */
-export function urgencyTier(dateStr: string | null | undefined): 'urgent' | 'upcoming' | 'clear' | null {
+export function urgencyTier(dateStr: string | null | undefined): UrgencyTier | null {
   const days = daysUntil(dateStr)
   if (days === null) return null
-  if (days <= 90)  return 'urgent'
+  if (days <= 0)   return 'expired'
+  if (days <= 60)  return 'urgent'
   if (days <= 180) return 'upcoming'
   return 'clear'
 }
 
-export const URGENCY_BADGE: Record<'urgent' | 'upcoming' | 'clear', string> = {
+export const URGENCY_BADGE: Record<UrgencyTier, string> = {
+  expired:  'bg-red-200 text-red-800 border border-red-300',
   urgent:   'bg-red-100 text-red-700 border border-red-200',
   upcoming: 'bg-amber-100 text-amber-700 border border-amber-200',
   clear:    'bg-green-100 text-green-700 border border-green-200',
 }
 
-export const URGENCY_LABEL: Record<'urgent' | 'upcoming' | 'clear', string> = {
+export const URGENCY_LABEL: Record<UrgencyTier, string> = {
+  expired:  'Expired',
   urgent:   'Urgent',
   upcoming: 'Upcoming',
   clear:    'Clear',

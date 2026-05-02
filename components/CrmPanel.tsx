@@ -25,7 +25,7 @@ export default function CrmPanel({ company }: { company: ParentCompany }) {
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
       <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-4">CRM</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Pipeline Status */}
         <div>
           <label className="block text-xs font-medium text-slate-500 mb-1.5">Pipeline Status</label>
@@ -60,22 +60,6 @@ export default function CrmPanel({ company }: { company: ParentCompany }) {
             onBlur={e => update({ next_contact_date: e.target.value || null })}
             className="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
-        </div>
-
-        {/* Confidence */}
-        <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1.5">Data Confidence</label>
-          <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 h-[38px]">
-            <div className="flex-1 bg-slate-200 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="h-full bg-blue-500 rounded-full"
-                style={{ width: `${company.confidence ?? 0}%` }}
-              />
-            </div>
-            <span className="text-xs text-slate-600 font-medium w-8 text-right">
-              {company.confidence ?? 0}%
-            </span>
-          </div>
         </div>
       </div>
 

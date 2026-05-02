@@ -14,59 +14,101 @@ const STATUSES = Object.keys(PIPELINE_LABELS) as PipelineStatus[]
 
 const URGENCY_FILTERS = [
   { value: 'all',      label: 'All' },
-  { value: 'urgent',   label: 'Urgent ≤90d' },
+  { value: 'expired',  label: 'Expired' },
+  { value: 'urgent',   label: 'Urgent ≤60d' },
   { value: 'upcoming', label: 'Upcoming ≤180d' },
   { value: 'clear',    label: 'Clear' },
 ]
 
+type SortMode = 'expiry' | 'last_contact' | 'next_contact'
+
 type CompanyFormData = {
   name: string
   location: string
-  region: string
   pipeline_status: PipelineStatus
 }
 
 const EMPTY_COMPANY_FORM: CompanyFormData = {
   name: '',
   location: '',
-  region: '',
   pipeline_status: 'prospect',
 }
 
-export default function CompaniesTable({ initialCompanies }: { initialCompanies: ParentCompany[] }) {
+export default function CompaniesTable({
+  initialCompanies,
+  asianScopeIds,
+}: {
+  initialCompanies: ParentCompany[]
+  asianScopeIds: string[]
+}) {
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [companies, setCompanies] = useState<ParentCompany[]>(initialCompanies)
-  const [filterLocation, setFilterLocation] = useState<string>('East / Southeast Asia')
-  const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [filterUrgency, setFilterUrgency] = useState<string>('all')
-  const [search, setSearch] = useState('')
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [addForm, setAddForm] = useState<CompanyFormData>(EMPTY_COMPANY_FORM)
-  const [adding, setAdding] = useState(false)
+  const [filterLocationVal, setFilterLocationVal] = useState<string>('all')
+  const [filterAsianScope, setFilterAsianScope]   = useState<boolean>(false)
+  const [filterStatus, setFilterStatus]           = useState<string>('all')
+  const [filterUrgency, setFilterUrgency]         = useState<string>('all')
+  const [sortMode, setSortMode]                   = useState<SortMode>('expiry')
+  const [search, setSearch]                       = useState('')
+  const [showAddModal, setShowAddModal]           = useState(false)
+  const [addForm, setAddForm]                     = useState<CompanyFormData>(EMPTY_COMPANY_FORM)
+  const [adding, setAdding]                       = useState(false)
 
-  // Derive unique regions from company data, excluding Unknown
-  const regions = useMemo(() => {
+  const asianSet = useMemo(() => new Set(asianScopeIds), [asianScopeIds])
+
+  const locations = useMemo(() => {
     const locs = new Set<string>()
     for (const c of companies) {
       if (c.name === 'Unknown Parent Company') continue
-      if (c.region) locs.add(c.region)
+      if (c.location) locs.add(c.location)
     }
     return Array.from(locs).sort()
   }, [companies])
 
-  const filtered = companies.filter(c => {
-    if (filterLocation !== 'all') {
-      if (c.name !== 'Unknown Parent Company' && c.region !== filterLocation) return false
-    }
-    if (filterStatus !== 'all' && c.pipeline_status !== filterStatus) return false
-    if (filterUrgency !== 'all') {
-      const tier = urgencyTier(c.soonest_expiry)
-      if (tier !== filterUrgency) return false
-    }
-    if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false
-    return true
-  })
+  const filtered = useMemo(() => {
+    return companies.filter(c => {
+      const isUnknown = c.name === 'Unknown Parent Company'
+      if (filterLocationVal !== 'all') {
+        if (!isUnknown && c.location !== filterLocationVal) return false
+      }
+      if (filterAsianScope) {
+        if (!isUnknown && !asianSet.has(c.id)) return false
+      }
+      if (filterStatus !== 'all' && c.pipeline_status !== filterStatus) return false
+      if (filterUrgency !== 'all') {
+        const tier = urgencyTier(c.soonest_expiry)
+        if (tier !== filterUrgency) return false
+      }
+      if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false
+      return true
+    })
+  }, [companies, filterLocationVal, filterAsianScope, asianSet, filterStatus, filterUrgency, search])
+
+  const sorted = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      if (a.name === 'Unknown Parent Company') return -1
+      if (b.name === 'Unknown Parent Company') return 1
+      if (sortMode === 'expiry') {
+        if (!a.soonest_expiry && !b.soonest_expiry) return 0
+        if (!a.soonest_expiry) return 1
+        if (!b.soonest_expiry) return -1
+        return a.soonest_expiry.localeCompare(b.soonest_expiry)
+      }
+      if (sortMode === 'last_contact') {
+        if (!a.last_contact_date && !b.last_contact_date) return 0
+        if (!a.last_contact_date) return 1
+        if (!b.last_contact_date) return -1
+        return b.last_contact_date.localeCompare(a.last_contact_date)
+      }
+      if (sortMode === 'next_contact') {
+        if (!a.next_contact_date && !b.next_contact_date) return 0
+        if (!a.next_contact_date) return 1
+        if (!b.next_contact_date) return -1
+        return a.next_contact_date.localeCompare(b.next_contact_date)
+      }
+      return 0
+    })
+  }, [filtered, sortMode])
 
   async function updateStatus(id: string, value: PipelineStatus) {
     const supabase = createClient()
@@ -92,11 +134,10 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
     const { data } = await supabase
       .from('parent_companies')
       .insert({
-        name:             addForm.name.trim(),
-        location:         addForm.location || null,
-        region:           addForm.region || null,
-        pipeline_status:  addForm.pipeline_status,
-        needs_review:     false,
+        name:            addForm.name.trim(),
+        location:        addForm.location || null,
+        pipeline_status: addForm.pipeline_status,
+        needs_review:    false,
       })
       .select()
       .single()
@@ -117,7 +158,7 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
           <div>
             <h1 className="text-xl font-semibold text-slate-900">Companies</h1>
             <p className="text-sm text-slate-500 mt-0.5">
-              {filtered.length} of {companies.length} companies
+              {sorted.length} of {companies.length} companies
             </p>
           </div>
           <button
@@ -128,40 +169,8 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
           </button>
         </div>
 
-        {/* Primary filter — Region pills */}
-        {regions.length > 0 && (
-          <div>
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Filter by region</p>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setFilterLocation('all')}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  filterLocation === 'all'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                All regions
-              </button>
-              {regions.map(loc => (
-                <button
-                  key={loc}
-                  onClick={() => setFilterLocation(loc === filterLocation ? 'all' : loc)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    filterLocation === loc
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {loc}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Secondary filters */}
-        <div className="flex flex-wrap gap-3">
+        {/* Filters */}
+        <div className="flex flex-wrap gap-3 items-center">
           <input
             type="text"
             placeholder="Search companies…"
@@ -169,6 +178,20 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
             onChange={e => setSearch(e.target.value)}
             className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-52"
           />
+
+          {/* Location dropdown */}
+          <select
+            value={filterLocationVal}
+            onChange={e => setFilterLocationVal(e.target.value)}
+            className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+            <option value="all">All locations</option>
+            {locations.map(loc => (
+              <option key={loc} value={loc}>{loc}</option>
+            ))}
+          </select>
+
+          {/* Pipeline status */}
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
@@ -179,6 +202,19 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
               <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
             ))}
           </select>
+
+          {/* Sort */}
+          <select
+            value={sortMode}
+            onChange={e => setSortMode(e.target.value as SortMode)}
+            className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+            <option value="expiry">Sort: Next COFR Expiry</option>
+            <option value="last_contact">Sort: Last Contact</option>
+            <option value="next_contact">Sort: Next Contact</option>
+          </select>
+
+          {/* Urgency filter pills */}
           <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
             {URGENCY_FILTERS.map(f => (
               <button
@@ -194,6 +230,18 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
               </button>
             ))}
           </div>
+
+          {/* Asian scope toggle */}
+          <button
+            onClick={() => setFilterAsianScope(v => !v)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+              filterAsianScope
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            Asian Scope Only
+          </button>
         </div>
 
         {/* Table */}
@@ -213,14 +261,14 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtered.length === 0 && (
+                {sorted.length === 0 && (
                   <tr>
                     <td colSpan={8} className="text-center py-12 text-slate-400">
                       No companies match your filters
                     </td>
                   </tr>
                 )}
-                {filtered.map(c => {
+                {sorted.map(c => {
                   const tier = urgencyTier(c.soonest_expiry)
                   const days = daysUntil(c.soonest_expiry)
                   const isUnknown = c.name === 'Unknown Parent Company'
@@ -247,7 +295,7 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
                         {isUnknown ? (
                           <span className="text-slate-400 italic">—</span>
                         ) : (
-                          [c.location, c.region].filter(Boolean).join(' · ') || '—'
+                          c.location || '—'
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -341,7 +389,6 @@ export default function CompaniesTable({ initialCompanies }: { initialCompanies:
             <div className="space-y-4">
               <ModalField label="Company Name *" value={addForm.name} onChange={formField('name')} />
               <ModalField label="Location" value={addForm.location} onChange={formField('location')} placeholder="e.g. Tokyo, Japan" />
-              <ModalField label="Region" value={addForm.region} onChange={formField('region')} placeholder="e.g. East / Southeast Asia" />
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Pipeline Status</label>
                 <select
