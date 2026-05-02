@@ -20,6 +20,12 @@ const URGENCY_FILTERS = [
   { value: 'clear',    label: 'Clear' },
 ]
 
+function extractCountry(location: string | null): string | null {
+  if (!location) return null
+  const parts = location.split(',')
+  return parts[parts.length - 1].trim() || null
+}
+
 type SortMode = 'expiry' | 'last_contact' | 'next_contact'
 
 type CompanyFormData = {
@@ -60,7 +66,8 @@ export default function CompaniesTable({
     const locs = new Set<string>()
     for (const c of companies) {
       if (c.name === 'Unknown Parent Company') continue
-      if (c.location) locs.add(c.location)
+      const country = extractCountry(c.location)
+      if (country) locs.add(country)
     }
     return Array.from(locs).sort()
   }, [companies])
@@ -69,7 +76,7 @@ export default function CompaniesTable({
     return companies.filter(c => {
       const isUnknown = c.name === 'Unknown Parent Company'
       if (filterLocationVal !== 'all') {
-        if (!isUnknown && c.location !== filterLocationVal) return false
+        if (!isUnknown && extractCountry(c.location) !== filterLocationVal) return false
       }
       if (filterAsianScope) {
         if (!isUnknown && !asianSet.has(c.id)) return false
