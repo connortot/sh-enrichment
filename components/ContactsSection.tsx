@@ -162,11 +162,11 @@ export default function ContactsSection({
 
   return (
     <>
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 overflow-hidden">
         {contacts.length === 0 ? (
           <div className="p-8 text-center text-slate-400 text-sm">
             No contacts yet.
-            <button onClick={openAdd} className="ml-2 text-blue-600 hover:underline font-medium">
+            <button onClick={openAdd} className="ml-2 text-[#008DDA] hover:underline font-medium">
               Add one
             </button>
           </div>
@@ -178,7 +178,7 @@ export default function ContactsSection({
                 <select
                   value={filterLocation}
                   onChange={e => setFilterLocation(e.target.value)}
-                  className="px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="px-3 py-1.5 text-xs border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white"
                 >
                   <option value="all">All locations</option>
                   {locationOptions.map(l => <option key={l} value={l}>{l}</option>)}
@@ -188,7 +188,7 @@ export default function ContactsSection({
                 <select
                   value={filterTitle}
                   onChange={e => setFilterTitle(e.target.value)}
-                  className="px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="px-3 py-1.5 text-xs border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white"
                 >
                   <option value="all">All titles</option>
                   {titleOptions.map(t => <option key={t} value={t}>{t}</option>)}
@@ -230,7 +230,7 @@ export default function ContactsSection({
                   )}
                   {sorted.map(c => (
                     <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-3 font-medium text-slate-900">
+                      <td className="px-4 py-3 font-medium text-[#3C3C3B]">
                         {[c.first_name, c.last_name].filter(Boolean).join(' ') || '—'}
                       </td>
                       <td className="px-4 py-3 text-slate-600 max-w-40 truncate" title={c.title ?? ''}>
@@ -238,7 +238,7 @@ export default function ContactsSection({
                       </td>
                       <td className="px-4 py-3">
                         {c.email ? (
-                          <a href={`mailto:${c.email}`} className="text-blue-600 hover:underline">
+                          <a href={`mailto:${c.email}`} className="text-[#008DDA] hover:underline">
                             {c.email}
                           </a>
                         ) : (
@@ -254,7 +254,7 @@ export default function ContactsSection({
                             href={c.linkedin_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 text-xs"
+                            className="text-[#008DDA] hover:text-[#006BB0] inline-flex items-center gap-1 text-xs"
                           >
                             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
@@ -296,7 +296,7 @@ export default function ContactsSection({
             <div className="px-4 py-3 border-t border-slate-100">
               <button
                 onClick={openAdd}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                className="text-sm text-[#008DDA] hover:text-[#006BB0] font-medium transition-colors"
               >
                 + Add contact
               </button>
@@ -309,8 +309,8 @@ export default function ContactsSection({
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={closeModal} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-base font-semibold text-slate-900 mb-5">
+          <div className="relative bg-white shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-base font-semibold text-[#3C3C3B] mb-5">
               {modal === 'add' ? 'Add Contact' : 'Edit Contact'}
             </h3>
 
@@ -346,7 +346,7 @@ export default function ContactsSection({
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-medium transition-colors"
+                className="px-4 py-2 text-sm bg-[#ACE2E1] hover:bg-[#96D5D4] disabled:opacity-60 text-[#3C3C3B] font-medium transition-colors"
               >
                 {saving ? 'Saving…' : modal === 'add' ? 'Add Contact' : 'Save Changes'}
               </button>
@@ -375,7 +375,7 @@ function Field({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-full text-sm px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA]"
       />
     </div>
   )

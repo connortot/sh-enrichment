@@ -32,11 +32,11 @@ export default async function CompanyPage({ params }: { params: Promise<{ id: st
       {/* Company header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{company.name}</h1>
+          <h1 className="text-2xl font-semibold text-[#3C3C3B]">{company.name}</h1>
           <p className="text-slate-500 text-sm mt-1">
             {company.location || 'Location unknown'}
             {company.needs_review && (
-              <span className="ml-3 bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full font-medium">
+              <span className="ml-3 bg-amber-100 text-amber-700 text-xs px-2 py-0.5 font-medium">
                 Needs Review
               </span>
             )}

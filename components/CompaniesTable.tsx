@@ -163,14 +163,14 @@ export default function CompaniesTable({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-slate-900">Companies</h1>
+            <h1 className="text-xl font-semibold text-[#3C3C3B]">Companies</h1>
             <p className="text-sm text-slate-500 mt-0.5">
               {sorted.length} of {companies.length} companies
             </p>
           </div>
           <button
             onClick={() => { setAddForm(EMPTY_COMPANY_FORM); setShowAddModal(true) }}
-            className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            className="px-4 py-2 text-sm bg-[#ACE2E1] hover:bg-[#96D5D4] text-[#3C3C3B] font-medium transition-colors"
           >
             + Add company
           </button>
@@ -183,14 +183,14 @@ export default function CompaniesTable({
             placeholder="Search companies…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-52"
+            className="px-3 py-2 text-sm border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] w-52"
           />
 
           {/* Location dropdown */}
           <select
             value={filterLocationVal}
             onChange={e => setFilterLocationVal(e.target.value)}
-            className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="px-3 py-2 text-sm border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white"
           >
             <option value="all">All locations</option>
             {locations.map(loc => (
@@ -202,7 +202,7 @@ export default function CompaniesTable({
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
-            className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="px-3 py-2 text-sm border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white"
           >
             <option value="all">All statuses</option>
             {STATUSES.map(s => (
@@ -214,7 +214,7 @@ export default function CompaniesTable({
           <select
             value={sortMode}
             onChange={e => setSortMode(e.target.value as SortMode)}
-            className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="px-3 py-2 text-sm border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white"
           >
             <option value="expiry">Sort: Next COFR Expiry</option>
             <option value="last_contact">Sort: Last Contact</option>
@@ -222,14 +222,14 @@ export default function CompaniesTable({
           </select>
 
           {/* Urgency filter pills */}
-          <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-slate-100 p-1">
             {URGENCY_FILTERS.map(f => (
               <button
                 key={f.value}
                 onClick={() => setFilterUrgency(f.value)}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-1 text-sm font-medium transition-colors ${
                   filterUrgency === f.value
-                    ? 'bg-white text-slate-900 shadow-sm'
+                    ? 'bg-white text-[#3C3C3B] shadow-sm'
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
@@ -241,9 +241,9 @@ export default function CompaniesTable({
           {/* Asian scope toggle */}
           <button
             onClick={() => setFilterAsianScope(v => !v)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+            className={`px-3 py-1.5 text-sm font-medium transition-colors border ${
               filterAsianScope
-                ? 'bg-blue-600 text-white border-blue-600'
+                ? 'bg-[#ACE2E1] text-[#3C3C3B] border-[#ACE2E1]'
                 : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'
             }`}
           >
@@ -252,7 +252,7 @@ export default function CompaniesTable({
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="bg-white border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -288,12 +288,12 @@ export default function CompaniesTable({
                       <td className="px-4 py-3">
                         <Link
                           href={`/companies/${c.id}`}
-                          className={`font-medium hover:underline ${isUnknown ? 'text-slate-500 italic' : 'text-blue-600 hover:text-blue-800'}`}
+                          className={`font-medium hover:underline ${isUnknown ? 'text-slate-500 italic' : 'text-[#008DDA] hover:text-[#006BB0]'}`}
                         >
                           {c.name}
                         </Link>
                         {c.needs_review && !isUnknown && (
-                          <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">
+                          <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 font-medium">
                             Review
                           </span>
                         )}
@@ -306,13 +306,13 @@ export default function CompaniesTable({
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-medium text-xs">
+                        <span className="inline-flex items-center justify-center w-7 h-7 bg-slate-100 text-slate-700 font-medium text-xs">
                           {c.vessel_count ?? 0}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         {urgentCount > 0 ? (
-                          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 font-medium text-xs">
+                          <span className="inline-flex items-center justify-center w-7 h-7 bg-red-100 text-red-700 font-medium text-xs">
                             {urgentCount}
                           </span>
                         ) : (
@@ -323,7 +323,7 @@ export default function CompaniesTable({
                         {c.soonest_expiry ? (
                           <div className="flex items-center gap-2">
                             {tier && (
-                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${URGENCY_BADGE[tier]}`}>
+                              <span className={`text-xs px-2 py-0.5 font-medium ${URGENCY_BADGE[tier]}`}>
                                 {URGENCY_LABEL[tier]}
                               </span>
                             )}
@@ -349,7 +349,7 @@ export default function CompaniesTable({
                           <select
                             value={c.pipeline_status}
                             onChange={e => updateStatus(c.id, e.target.value as PipelineStatus)}
-                            className={`text-xs font-medium px-2 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 ${PIPELINE_COLOURS[c.pipeline_status]}`}
+                            className={`text-xs font-medium px-2 py-1 border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#008DDA] ${PIPELINE_COLOURS[c.pipeline_status]}`}
                           >
                             {STATUSES.map(s => (
                               <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
@@ -363,7 +363,7 @@ export default function CompaniesTable({
                             type="date"
                             defaultValue={c.last_contact_date ?? ''}
                             onBlur={e => updateDate(c.id, 'last_contact_date', e.target.value)}
-                            className="text-xs text-slate-700 border border-transparent hover:border-slate-300 focus:border-blue-400 rounded px-1.5 py-1 focus:outline-none w-32"
+                            className="text-xs text-slate-700 border border-transparent hover:border-slate-300 focus:border-[#008DDA] px-1.5 py-1 focus:outline-none w-32"
                           />
                         )}
                       </td>
@@ -373,7 +373,7 @@ export default function CompaniesTable({
                             type="date"
                             defaultValue={c.next_contact_date ?? ''}
                             onBlur={e => updateDate(c.id, 'next_contact_date', e.target.value)}
-                            className="text-xs text-slate-700 border border-transparent hover:border-slate-300 focus:border-blue-400 rounded px-1.5 py-1 focus:outline-none w-32"
+                            className="text-xs text-slate-700 border border-transparent hover:border-slate-300 focus:border-[#008DDA] px-1.5 py-1 focus:outline-none w-32"
                           />
                         )}
                       </td>
@@ -390,8 +390,8 @@ export default function CompaniesTable({
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowAddModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h3 className="text-base font-semibold text-slate-900 mb-5">Add Company</h3>
+          <div className="relative bg-white shadow-2xl w-full max-w-md p-6">
+            <h3 className="text-base font-semibold text-[#3C3C3B] mb-5">Add Company</h3>
 
             <div className="space-y-4">
               <ModalField label="Company Name *" value={addForm.name} onChange={formField('name')} />
@@ -401,7 +401,7 @@ export default function CompaniesTable({
                 <select
                   value={addForm.pipeline_status}
                   onChange={formField('pipeline_status')}
-                  className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                  className="w-full text-sm px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white"
                 >
                   {STATUSES.map(s => (
                     <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
@@ -420,7 +420,7 @@ export default function CompaniesTable({
               <button
                 onClick={handleAddCompany}
                 disabled={adding || !addForm.name.trim()}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-medium transition-colors"
+                className="px-4 py-2 text-sm bg-[#ACE2E1] hover:bg-[#96D5D4] disabled:opacity-60 text-[#3C3C3B] font-medium transition-colors"
               >
                 {adding ? 'Adding…' : 'Add Company'}
               </button>
@@ -448,7 +448,7 @@ function ModalField({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-full text-sm px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA]"
       />
     </div>
   )

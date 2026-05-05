@@ -63,13 +63,13 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
       <div className="flex items-center gap-2">
         <button
           onClick={() => setShowEdit(true)}
-          className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:border-slate-400 text-slate-600 hover:text-slate-900 transition-colors"
+          className="px-3 py-1.5 text-sm border border-slate-300 hover:border-slate-400 text-slate-600 hover:text-slate-900 transition-colors"
         >
           Edit
         </button>
         <button
           onClick={() => setShowDelete(true)}
-          className="px-3 py-1.5 text-sm border border-red-200 rounded-lg hover:border-red-400 text-red-500 hover:text-red-700 transition-colors"
+          className="px-3 py-1.5 text-sm border border-red-200 hover:border-red-400 text-red-500 hover:text-red-700 transition-colors"
         >
           Delete
         </button>
@@ -79,8 +79,8 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
       {showEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowEdit(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h3 className="text-base font-semibold text-slate-900 mb-5">Edit Company</h3>
+          <div className="relative bg-white shadow-2xl w-full max-w-md p-6">
+            <h3 className="text-base font-semibold text-[#3C3C3B] mb-5">Edit Company</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Company Name *</label>
@@ -88,7 +88,7 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
                   type="text"
                   value={editForm.name}
                   onChange={field('name')}
-                  className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full text-sm px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA]"
                 />
               </div>
               <div>
@@ -98,7 +98,7 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
                   value={editForm.location}
                   onChange={field('location')}
                   placeholder="e.g. Tokyo, Japan"
-                  className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full text-sm px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA]"
                 />
               </div>
               <div>
@@ -106,7 +106,7 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
                 <select
                   value={editForm.pipeline_status}
                   onChange={field('pipeline_status')}
-                  className={`w-full text-sm font-medium px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-400 ${PIPELINE_COLOURS[editForm.pipeline_status]}`}
+                  className={`w-full text-sm font-medium px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-[#008DDA] ${PIPELINE_COLOURS[editForm.pipeline_status]}`}
                 >
                   {STATUSES.map(s => (
                     <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
@@ -120,7 +120,7 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
                   onChange={field('notes')}
                   rows={3}
                   placeholder="Add notes…"
-                  className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                  className="w-full text-sm px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] resize-none"
                 />
               </div>
             </div>
@@ -134,7 +134,7 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
               <button
                 onClick={handleSave}
                 disabled={saving || !editForm.name.trim()}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-medium transition-colors"
+                className="px-4 py-2 text-sm bg-[#ACE2E1] hover:bg-[#96D5D4] disabled:opacity-60 text-[#3C3C3B] font-medium transition-colors"
               >
                 {saving ? 'Saving…' : 'Save Changes'}
               </button>
@@ -147,8 +147,8 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
       {showDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowDelete(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
-            <h3 className="text-base font-semibold text-slate-900 mb-2">Delete Company</h3>
+          <div className="relative bg-white shadow-2xl w-full max-w-sm p-6">
+            <h3 className="text-base font-semibold text-[#3C3C3B] mb-2">Delete Company</h3>
             <p className="text-sm text-slate-600 mb-1">
               Are you sure you want to delete <span className="font-medium">{company.name}</span>?
             </p>
@@ -165,7 +165,7 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded-lg font-medium transition-colors"
+                className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-medium transition-colors"
               >
                 {deleting ? 'Deleting…' : 'Delete Company'}
               </button>

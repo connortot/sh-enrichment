@@ -71,7 +71,7 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
 
   if (vessels.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 text-sm">
+      <div className="bg-white border border-slate-200 p-8 text-center text-slate-400 text-sm">
         No vessels found
       </div>
     )
@@ -85,7 +85,7 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
           <select
             value={filterFlag}
             onChange={e => setFilterFlag(e.target.value)}
-            className="px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="px-3 py-1.5 text-xs border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white"
           >
             <option value="all">All flags</option>
             {flags.map(f => <option key={f} value={f}>{f}</option>)}
@@ -95,7 +95,7 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
           <select
             value={filterOperator}
             onChange={e => setFilterOperator(e.target.value)}
-            className="px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="px-3 py-1.5 text-xs border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white"
           >
             <option value="all">All operators</option>
             {operators.map(o => <option key={o} value={o}>{o}</option>)}
@@ -105,20 +105,20 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
           <select
             value={filterOpLoc}
             onChange={e => setFilterOpLoc(e.target.value)}
-            className="px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="px-3 py-1.5 text-xs border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white"
           >
             <option value="all">All op. locations</option>
             {opLocs.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
         )}
-        <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg p-1">
+        <div className="flex items-center gap-0.5 bg-slate-100 p-1">
           {STATUS_FILTERS.map(f => (
             <button
               key={f.value}
               onClick={() => setFilterStatus(f.value)}
-              className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-colors ${
+              className={`px-2.5 py-0.5 text-xs font-medium transition-colors ${
                 filterStatus === f.value
-                  ? 'bg-white text-slate-900 shadow-sm'
+                  ? 'bg-white text-[#3C3C3B] shadow-sm'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
@@ -136,7 +136,7 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -184,7 +184,7 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
                 return (
                   <tr key={v.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-slate-900">{v.name}</div>
+                      <div className="font-medium text-[#3C3C3B]">{v.name}</div>
                       <div className="text-xs text-slate-400">{v.vin}</div>
                     </td>
                     <td className="px-4 py-3 text-slate-600">{v.vessel_type_desc ?? '—'}</td>
@@ -208,7 +208,7 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
                       {v.expiration_date ? (
                         <div className="flex items-center gap-2 flex-wrap">
                           {tier && (
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${URGENCY_BADGE[tier]}`}>
+                            <span className={`text-xs px-2 py-0.5 font-medium ${URGENCY_BADGE[tier]}`}>
                               {URGENCY_LABEL[tier]}
                             </span>
                           )}

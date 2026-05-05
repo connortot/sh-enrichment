@@ -22,7 +22,7 @@ export default function CrmPanel({ company }: { company: ParentCompany }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+    <div className="bg-white border border-slate-200 p-5">
       <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-4">CRM</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -32,7 +32,7 @@ export default function CrmPanel({ company }: { company: ParentCompany }) {
           <select
             defaultValue={company.pipeline_status}
             onChange={e => update({ pipeline_status: e.target.value })}
-            className={`w-full text-sm font-medium px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer ${PIPELINE_COLOURS[company.pipeline_status]}`}
+            className={`w-full text-sm font-medium px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-[#008DDA] cursor-pointer ${PIPELINE_COLOURS[company.pipeline_status]}`}
           >
             {STATUSES.map(s => (
               <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
@@ -47,7 +47,7 @@ export default function CrmPanel({ company }: { company: ParentCompany }) {
             type="date"
             defaultValue={company.last_contact_date ?? ''}
             onBlur={e => update({ last_contact_date: e.target.value || null })}
-            className="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full text-sm px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA]"
           />
         </div>
 
@@ -58,7 +58,7 @@ export default function CrmPanel({ company }: { company: ParentCompany }) {
             type="date"
             defaultValue={company.next_contact_date ?? ''}
             onBlur={e => update({ next_contact_date: e.target.value || null })}
-            className="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full text-sm px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA]"
           />
         </div>
       </div>
@@ -72,7 +72,7 @@ export default function CrmPanel({ company }: { company: ParentCompany }) {
           onBlur={e => update({ notes: e.target.value || null })}
           rows={3}
           placeholder="Add notes about this company…"
-          className="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+          className="w-full text-sm px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] resize-none"
         />
       </div>
     </div>

@@ -30,28 +30,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
+    <div className="min-h-screen flex items-center justify-center bg-[#008DDA]">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600 mb-4">
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-semibold text-white">COFR CRM</h1>
-          <p className="text-slate-400 text-sm mt-1">Sign in to your account</p>
+          <img
+            src="https://shorelinehudson.com/wp-content/themes/shorelinehudson/src/images/svgs/logo-white.svg"
+            alt="Logo"
+            className="h-10 w-auto mx-auto mb-6"
+          />
+          <p className="text-white/70 text-sm">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 space-y-5">
+        <form onSubmit={handleSubmit} className="bg-white p-8 space-y-5">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-sm font-medium text-[#3C3C3B] mb-1.5">
               Email address
             </label>
             <input
@@ -59,13 +57,13 @@ export default function LoginPage() {
               required
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2.5 border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#008DDA] focus:border-transparent"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-sm font-medium text-[#3C3C3B] mb-1.5">
               Password
             </label>
             <input
@@ -73,7 +71,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2.5 border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#008DDA] focus:border-transparent"
               placeholder="••••••••"
             />
           </div>
@@ -81,7 +79,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition-colors"
+            className="w-full py-2.5 px-4 bg-[#ACE2E1] hover:bg-[#96D5D4] disabled:opacity-60 text-[#3C3C3B] text-sm font-medium transition-colors"
           >
             {loading ? 'Signing in…' : 'Sign in'}
           </button>

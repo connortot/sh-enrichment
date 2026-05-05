@@ -1,5 +1,45 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-primary: #ACE2E1;
+  --color-brand-secondary: #008DDA;
+  --color-brand-text: #3C3C3B;
+  --color-brand-bg: #FFFFFF;
+  --color-brand-link: #DEF3F3;
+}
+
+@font-face {
+  font-family: 'Gotham Narrow Book';
+  src: url('/fonts/GothamNarrow-Book.woff2') format('woff2'),
+       url('/fonts/GothamNarrow-Book.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gotham Narrow Medium';
+  src: url('/fonts/GothamNarrow-Medium.woff2') format('woff2'),
+       url('/fonts/GothamNarrow-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gotham Narrow Light';
+  src: url('/fonts/GothamNarrow-Light.woff2') format('woff2'),
+       url('/fonts/GothamNarrow-Light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: 'Gotham Narrow Book', 'Century Gothic', 'Futura', system-ui, sans-serif;
+  color: #3C3C3B;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Gotham Narrow Medium', 'Century Gothic', 'Futura', system-ui, sans-serif;
 }
