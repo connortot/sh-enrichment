@@ -51,7 +51,7 @@ export default function CompaniesTable({
   const [, startTransition] = useTransition()
   const [companies, setCompanies] = useState<ParentCompany[]>(initialCompanies)
   const [filterLocationVal, setFilterLocationVal] = useState<string>('all')
-  const [filterAsianScope, setFilterAsianScope]   = useState<boolean>(false)
+  const [filterAsianScope, setFilterAsianScope]   = useState<boolean>(true)
   const [filterStatus, setFilterStatus]           = useState<string>('all')
   const [filterUrgency, setFilterUrgency]         = useState<string>('all')
   const [sortMode, setSortMode]                   = useState<SortMode>('expiry')
@@ -259,9 +259,10 @@ export default function CompaniesTable({
                 <tr className="border-b border-slate-200 bg-slate-50">
                   <th className="text-left px-4 py-3 font-medium text-slate-600">Company</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-600">Location</th>
-                  <th className="text-center px-4 py-3 font-medium text-slate-600">Total Vessels</th>
                   <th className="text-center px-4 py-3 font-medium text-slate-600">Urgent COFR</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-600">Next COFR Expiry</th>
+                  <th className="text-center px-4 py-3 font-medium text-slate-600">Vessels</th>
+                  <th className="text-center px-4 py-3 font-medium text-slate-600">Contacts</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-600">Pipeline</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-600">Last Contact</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-600">Next Contact</th>
@@ -270,7 +271,7 @@ export default function CompaniesTable({
               <tbody className="divide-y divide-slate-100">
                 {sorted.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-slate-400">
+                    <td colSpan={9} className="text-center py-12 text-slate-400">
                       No companies match your filters
                     </td>
                   </tr>
@@ -306,11 +307,6 @@ export default function CompaniesTable({
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="inline-flex items-center justify-center w-7 h-7 bg-slate-100 text-slate-700 font-medium text-xs">
-                          {c.vessel_count ?? 0}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
                         {urgentCount > 0 ? (
                           <span className="inline-flex items-center justify-center w-7 h-7 bg-red-100 text-red-700 font-medium text-xs">
                             {urgentCount}
@@ -340,6 +336,20 @@ export default function CompaniesTable({
                           </div>
                         ) : (
                           <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex items-center justify-center w-7 h-7 bg-slate-100 text-slate-700 font-medium text-xs">
+                          {c.vessel_count ?? 0}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {(c.contact_count ?? 0) > 0 ? (
+                          <span className="inline-flex items-center justify-center w-7 h-7 bg-[#ACE2E1] text-[#3C3C3B] font-medium text-xs">
+                            {c.contact_count}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300">—</span>
                         )}
                       </td>
                       <td className="px-4 py-3">

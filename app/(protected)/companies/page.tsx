@@ -8,9 +8,10 @@ export const dynamic = 'force-dynamic'
 export default async function DashboardPage() {
   const supabase = await createClient()
 
-  const [{ data: companies }, { data: vessels }, { data: asianScope }] = await Promise.all([
+  const [{ data: companies }, { data: vessels }, { data: contacts }, { data: asianScope }] = await Promise.all([
     supabase.from('parent_companies').select('*').order('name'),
     supabase.from('vessels').select('id, parent_company_id, expiration_date'),
+    supabase.from('contacts').select('parent_company_id'),
     supabase.from('asian_scope_companies').select('id'),
   ])
 
@@ -28,6 +29,7 @@ export default async function DashboardPage() {
         return d !== null && d <= 60
       }).length,
       soonest_expiry: expiries[0] ?? null,
+      contact_count: (contacts ?? []).filter(ct => ct.parent_company_id === c.id).length,
     }
   })
 

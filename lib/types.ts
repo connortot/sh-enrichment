@@ -22,6 +22,7 @@ export interface ParentCompany {
   vessel_count?: number
   urgent_vessel_count?: number
   soonest_expiry?: string | null
+  contact_count?: number
 }
 
 export interface Vessel {
