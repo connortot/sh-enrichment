@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import type { ParentCompany } from '@/lib/types'
 import { daysUntil } from '@/lib/types'
@@ -35,5 +36,9 @@ export default async function DashboardPage() {
 
   const asianScopeIds = (asianScope ?? []).map(r => r.id)
 
-  return <CompaniesTable initialCompanies={enriched} asianScopeIds={asianScopeIds} />
+  return (
+    <Suspense>
+      <CompaniesTable initialCompanies={enriched} asianScopeIds={asianScopeIds} />
+    </Suspense>
+  )
 }

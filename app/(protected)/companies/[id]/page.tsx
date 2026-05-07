@@ -8,8 +8,16 @@ import CompanyActions from '@/components/CompanyActions'
 
 export const dynamic = 'force-dynamic'
 
-export default async function CompanyPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CompanyPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ back?: string }>
+}) {
   const { id } = await params
+  const { back } = await searchParams
+  const backHref = back ? `/companies?${decodeURIComponent(back)}` : '/companies'
   const supabase = await createClient()
 
   const [{ data: company }, { data: vessels }, { data: contacts }] = await Promise.all([
@@ -24,7 +32,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ id: st
     <div className="space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-slate-500">
-        <Link href="/companies" className="hover:text-slate-900 transition-colors">Companies</Link>
+        <Link href={backHref} className="hover:text-slate-900 transition-colors">Companies</Link>
         <span>/</span>
         <span className="text-slate-900 font-medium">{company.name}</span>
       </div>

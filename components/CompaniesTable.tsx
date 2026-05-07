@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useTransition, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useTransition, useMemo, useEffect } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
   type ParentCompany, type PipelineStatus,
@@ -48,14 +48,16 @@ export default function CompaniesTable({
   asianScopeIds: string[]
 }) {
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [, startTransition] = useTransition()
   const [companies, setCompanies] = useState<ParentCompany[]>(initialCompanies)
-  const [filterLocationVal, setFilterLocationVal] = useState<string>('all')
-  const [filterAsianScope, setFilterAsianScope]   = useState<boolean>(true)
-  const [filterStatus, setFilterStatus]           = useState<string>('all')
-  const [filterUrgency, setFilterUrgency]         = useState<string>('all')
-  const [sortMode, setSortMode]                   = useState<SortMode>('expiry')
-  const [search, setSearch]                       = useState('')
+  const [filterLocationVal, setFilterLocationVal] = useState<string>(searchParams.get('location') ?? 'all')
+  const [filterAsianScope, setFilterAsianScope]   = useState<boolean>(searchParams.get('asian') !== 'false')
+  const [filterStatus, setFilterStatus]           = useState<string>(searchParams.get('status') ?? 'all')
+  const [filterUrgency, setFilterUrgency]         = useState<string>(searchParams.get('urgency') ?? 'all')
+  const [sortMode, setSortMode]                   = useState<SortMode>((searchParams.get('sort') as SortMode) ?? 'expiry')
+  const [search, setSearch]                       = useState(searchParams.get('q') ?? '')
   const [showAddModal, setShowAddModal]           = useState(false)
   const [addForm, setAddForm]                     = useState<CompanyFormData>(EMPTY_COMPANY_FORM)
   const [adding, setAdding]                       = useState(false)
@@ -90,6 +92,18 @@ export default function CompaniesTable({
       return true
     })
   }, [companies, filterLocationVal, filterAsianScope, asianSet, filterStatus, filterUrgency, search])
+
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (search) params.set('q', search)
+    if (filterLocationVal !== 'all') params.set('location', filterLocationVal)
+    if (!filterAsianScope) params.set('asian', 'false')
+    if (filterStatus !== 'all') params.set('status', filterStatus)
+    if (filterUrgency !== 'all') params.set('urgency', filterUrgency)
+    if (sortMode !== 'expiry') params.set('sort', sortMode)
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+  }, [search, filterLocationVal, filterAsianScope, filterStatus, filterUrgency, sortMode, pathname])
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
@@ -288,7 +302,7 @@ export default function CompaniesTable({
                     >
                       <td className="px-4 py-3">
                         <Link
-                          href={`/companies/${c.id}`}
+                          href={`/companies/${c.id}${searchParams.toString() ? `?back=${encodeURIComponent(searchParams.toString())}` : ''}`}
                           className={`font-medium hover:underline ${isUnknown ? 'text-slate-500 italic' : 'text-[#008DDA] hover:text-[#006BB0]'}`}
                         >
                           {c.name}
