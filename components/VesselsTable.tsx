@@ -199,7 +199,7 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
                     </td>
                     <td className="px-4 py-3 text-slate-600">
                       {v.effective_date
-                        ? new Date(v.effective_date).toLocaleDateString('en-GB', {
+                        ? new Date(v.effective_date).toLocaleDateString('en-US', {
                             day: 'numeric', month: 'short', year: 'numeric'
                           })
                         : '—'}
@@ -213,7 +213,7 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
                             </span>
                           )}
                           <span className="text-slate-700">
-                            {new Date(v.expiration_date).toLocaleDateString('en-GB', {
+                            {new Date(v.expiration_date).toLocaleDateString('en-US', {
                               day: 'numeric', month: 'short', year: 'numeric'
                             })}
                           </span>
