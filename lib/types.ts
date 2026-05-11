@@ -12,6 +12,7 @@ export interface ParentCompany {
   name: string
   location: string | null
   needs_review: boolean
+  is_prospect: boolean
   pipeline_status: PipelineStatus
   last_contact_date: string | null
   next_contact_date: string | null
@@ -23,6 +24,10 @@ export interface ParentCompany {
   urgent_vessel_count?: number
   soonest_expiry?: string | null
   contact_count?: number
+  vessel_gross_tonnages?: number[]
+  vessel_flags?: string[]
+  vessel_op_locations?: string[]
+  contact_titles?: string[]
 }
 
 export interface Vessel {

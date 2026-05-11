@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import type { Vessel, UrgencyTier } from '@/lib/types'
+import type { Vessel } from '@/lib/types'
 import { urgencyTier, URGENCY_BADGE, URGENCY_LABEL, daysUntil } from '@/lib/types'
 
-type SortField = 'expiry' | 'flag' | 'operator' | 'op_location'
+type SortField = 'name' | 'type' | 'gross_tonnage' | 'flag' | 'operator' | 'op_location' | 'effective' | 'expiry'
 type SortDir   = 'asc' | 'desc'
 
 const STATUS_FILTERS: { value: string; label: string }[] = [
@@ -44,17 +44,28 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
   const sorted = useMemo(() => {
     return [...visible].sort((a, b) => {
       let cmp = 0
-      if (sortField === 'expiry') {
-        if (!a.expiration_date && !b.expiration_date) cmp = 0
-        else if (!a.expiration_date) cmp = 1
-        else if (!b.expiration_date) cmp = -1
-        else cmp = a.expiration_date.localeCompare(b.expiration_date)
+      if (sortField === 'name') {
+        cmp = a.name.localeCompare(b.name)
+      } else if (sortField === 'type') {
+        cmp = (a.vessel_type_desc ?? '').localeCompare(b.vessel_type_desc ?? '')
+      } else if (sortField === 'gross_tonnage') {
+        cmp = (a.gross_tonnage ?? 0) - (b.gross_tonnage ?? 0)
       } else if (sortField === 'flag') {
         cmp = (a.flag ?? '').localeCompare(b.flag ?? '')
       } else if (sortField === 'operator') {
         cmp = (a.operator_name ?? '').localeCompare(b.operator_name ?? '')
       } else if (sortField === 'op_location') {
         cmp = (a.operator_location ?? '').localeCompare(b.operator_location ?? '')
+      } else if (sortField === 'effective') {
+        if (!a.effective_date && !b.effective_date) cmp = 0
+        else if (!a.effective_date) cmp = 1
+        else if (!b.effective_date) cmp = -1
+        else cmp = a.effective_date.localeCompare(b.effective_date)
+      } else if (sortField === 'expiry') {
+        if (!a.expiration_date && !b.expiration_date) cmp = 0
+        else if (!a.expiration_date) cmp = 1
+        else if (!b.expiration_date) cmp = -1
+        else cmp = a.expiration_date.localeCompare(b.expiration_date)
       }
       return sortDir === 'asc' ? cmp : -cmp
     })
@@ -67,6 +78,17 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
       setSortField(field)
       setSortDir('asc')
     }
+  }
+
+  function Th({ field, label, align = 'left' }: { field: SortField; label: string; align?: 'left' | 'center' | 'right' }) {
+    return (
+      <th
+        className={`text-${align} px-4 py-3 font-medium text-slate-600 cursor-pointer hover:text-slate-900 select-none`}
+        onClick={() => handleSort(field)}
+      >
+        {label}<SortIcon field={field} active={sortField === field} dir={sortDir} />
+      </th>
+    )
   }
 
   if (vessels.length === 0) {
@@ -141,39 +163,20 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-4 py-3 font-medium text-slate-600">Vessel</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-600">Type</th>
-                <th
-                  className="text-left px-4 py-3 font-medium text-slate-600 cursor-pointer hover:text-slate-900 select-none"
-                  onClick={() => handleSort('flag')}
-                >
-                  Flag <SortIcon field="flag" active={sortField === 'flag'} dir={sortDir} />
-                </th>
-                <th
-                  className="text-left px-4 py-3 font-medium text-slate-600 cursor-pointer hover:text-slate-900 select-none"
-                  onClick={() => handleSort('operator')}
-                >
-                  Operator <SortIcon field="operator" active={sortField === 'operator'} dir={sortDir} />
-                </th>
-                <th
-                  className="text-left px-4 py-3 font-medium text-slate-600 cursor-pointer hover:text-slate-900 select-none"
-                  onClick={() => handleSort('op_location')}
-                >
-                  Op. Location <SortIcon field="op_location" active={sortField === 'op_location'} dir={sortDir} />
-                </th>
-                <th className="text-left px-4 py-3 font-medium text-slate-600">COFR Effective</th>
-                <th
-                  className="text-left px-4 py-3 font-medium text-slate-600 cursor-pointer hover:text-slate-900 select-none"
-                  onClick={() => handleSort('expiry')}
-                >
-                  COFR Expiry <SortIcon field="expiry" active={sortField === 'expiry'} dir={sortDir} />
-                </th>
+                <Th field="name"          label="Vessel" />
+                <Th field="type"          label="Type" />
+                <Th field="gross_tonnage" label="Gross Tonnage" />
+                <Th field="flag"          label="Flag" />
+                <Th field="operator"      label="Operator" />
+                <Th field="op_location"   label="Op. Location" />
+                <Th field="effective"     label="COFR Effective" />
+                <Th field="expiry"        label="COFR Expiry" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-slate-400 text-sm">
+                  <td colSpan={8} className="text-center py-8 text-slate-400 text-sm">
                     No vessels match your filters
                   </td>
                 </tr>
@@ -188,6 +191,9 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
                       <div className="text-xs text-slate-400">{v.vin}</div>
                     </td>
                     <td className="px-4 py-3 text-slate-600">{v.vessel_type_desc ?? '—'}</td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {v.gross_tonnage != null ? v.gross_tonnage.toLocaleString() : <span className="text-slate-400">—</span>}
+                    </td>
                     <td className="px-4 py-3 text-slate-600">
                       {v.flag ?? <span className="text-slate-400">—</span>}
                     </td>

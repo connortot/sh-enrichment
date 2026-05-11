@@ -14,7 +14,7 @@ const EMPTY_FORM: ContactFormData = {
   city: null, state: null, country: null,
 }
 
-type SortField = 'name' | 'title' | 'location'
+type SortField = 'name' | 'title' | 'email' | 'linkedin' | 'location' | 'seniority'
 type SortDir   = 'asc' | 'desc'
 
 export default function ContactsSection({
@@ -71,10 +71,16 @@ export default function ContactsSection({
         cmp = aName.localeCompare(bName)
       } else if (sortField === 'title') {
         cmp = (a.title ?? '').localeCompare(b.title ?? '')
+      } else if (sortField === 'email') {
+        cmp = (a.email ?? '').localeCompare(b.email ?? '')
+      } else if (sortField === 'linkedin') {
+        cmp = (a.linkedin_url ?? '').localeCompare(b.linkedin_url ?? '')
       } else if (sortField === 'location') {
         const aLoc = [a.city, a.country].filter(Boolean).join(', ')
         const bLoc = [b.city, b.country].filter(Boolean).join(', ')
         cmp = aLoc.localeCompare(bLoc)
+      } else if (sortField === 'seniority') {
+        cmp = (a.seniority ?? '').localeCompare(b.seniority ?? '')
       }
       return sortDir === 'asc' ? cmp : -cmp
     })
@@ -211,12 +217,12 @@ export default function ContactsSection({
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50">
-                    <SortBtn field="name" label="Name" />
-                    <SortBtn field="title" label="Title" />
-                    <th className="text-left px-4 py-3 font-medium text-slate-600">Email</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-600">LinkedIn</th>
+                    <SortBtn field="name"     label="Name" />
+                    <SortBtn field="title"    label="Title" />
+                    <SortBtn field="email"    label="Email" />
+                    <SortBtn field="linkedin" label="LinkedIn" />
                     <SortBtn field="location" label="Location" />
-                    <th className="text-left px-4 py-3 font-medium text-slate-600">Seniority</th>
+                    <SortBtn field="seniority" label="Seniority" />
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>

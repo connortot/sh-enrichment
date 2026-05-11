@@ -11,8 +11,8 @@ export default async function DashboardPage() {
 
   const [{ data: companies }, { data: vessels }, { data: contacts }, { data: asianScope }] = await Promise.all([
     supabase.from('parent_companies').select('*').order('name'),
-    supabase.from('vessels').select('id, parent_company_id, expiration_date'),
-    supabase.from('contacts').select('parent_company_id'),
+    supabase.from('vessels').select('id, parent_company_id, expiration_date, gross_tonnage, flag, operator_location'),
+    supabase.from('contacts').select('parent_company_id, title'),
     supabase.from('asian_scope_companies').select('id'),
   ])
 
@@ -22,6 +22,7 @@ export default async function DashboardPage() {
       .map(v => v.expiration_date)
       .filter(Boolean)
       .sort() as string[]
+    const ccontacts = (contacts ?? []).filter(ct => ct.parent_company_id === c.id)
     return {
       ...c,
       vessel_count: cvessels.length,
@@ -30,7 +31,11 @@ export default async function DashboardPage() {
         return d !== null && d <= 60
       }).length,
       soonest_expiry: expiries[0] ?? null,
-      contact_count: (contacts ?? []).filter(ct => ct.parent_company_id === c.id).length,
+      contact_count: ccontacts.length,
+      vessel_gross_tonnages: cvessels.map(v => v.gross_tonnage).filter((n): n is number => n != null),
+      vessel_flags: [...new Set(cvessels.map(v => v.flag).filter((f): f is string => !!f))],
+      vessel_op_locations: [...new Set(cvessels.map(v => v.operator_location).filter((l): l is string => !!l))],
+      contact_titles: [...new Set(ccontacts.map(ct => ct.title).filter((t): t is string => !!t))],
     }
   })
 
