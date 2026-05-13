@@ -3,12 +3,14 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  type ParentCompany, type PipelineStatus,
+  type ParentCompany, type PipelineStatus, type ClientType,
   PIPELINE_LABELS, PIPELINE_COLOURS,
+  CLIENT_TYPE_LABELS, CLIENT_TYPE_COLOURS,
 } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 
 const STATUSES = Object.keys(PIPELINE_LABELS) as PipelineStatus[]
+const CLIENT_TYPES: ClientType[] = ['shoreline', 'hudson', 'both']
 
 export default function CrmPanel({ company }: { company: ParentCompany }) {
   const router = useRouter()
@@ -26,17 +28,35 @@ export default function CrmPanel({ company }: { company: ParentCompany }) {
       <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-4">CRM</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Pipeline Status */}
+        {/* Status (client type or pipeline) */}
         <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1.5">Pipeline Status</label>
+          <label className="block text-xs font-medium text-slate-500 mb-1.5">Status</label>
           <select
-            defaultValue={company.pipeline_status}
-            onChange={e => update({ pipeline_status: e.target.value })}
-            className={`w-full text-sm font-medium px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-[#008DDA] cursor-pointer ${PIPELINE_COLOURS[company.pipeline_status]}`}
+            defaultValue={company.client_type ?? company.pipeline_status}
+            onChange={e => {
+              const val = e.target.value
+              if ((CLIENT_TYPES as string[]).includes(val)) {
+                update({ client_type: val })
+              } else {
+                update({ client_type: null, pipeline_status: val })
+              }
+            }}
+            className={`w-full text-sm font-medium px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-[#008DDA] cursor-pointer ${
+              company.client_type
+                ? CLIENT_TYPE_COLOURS[company.client_type]
+                : PIPELINE_COLOURS[company.pipeline_status]
+            }`}
           >
-            {STATUSES.map(s => (
-              <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
-            ))}
+            <optgroup label="Existing Client">
+              {CLIENT_TYPES.map(ct => (
+                <option key={ct} value={ct}>{CLIENT_TYPE_LABELS[ct]}</option>
+              ))}
+            </optgroup>
+            <optgroup label="Pipeline">
+              {STATUSES.map(s => (
+                <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
+              ))}
+            </optgroup>
           </select>
         </div>
 

@@ -7,6 +7,8 @@ export type PipelineStatus =
   | 'lost'
   | 'not_interested'
 
+export type ClientType = 'shoreline' | 'hudson' | 'both'
+
 export interface ParentCompany {
   id: string
   name: string
@@ -14,6 +16,7 @@ export interface ParentCompany {
   needs_review: boolean
   is_prospect: boolean
   pipeline_status: PipelineStatus
+  client_type: ClientType | null
   last_contact_date: string | null
   next_contact_date: string | null
   notes: string | null
@@ -86,6 +89,18 @@ export const PIPELINE_COLOURS: Record<PipelineStatus, string> = {
   won:             'bg-green-100 text-green-700',
   lost:            'bg-red-100 text-red-700',
   not_interested:  'bg-gray-100 text-gray-500',
+}
+
+export const CLIENT_TYPE_LABELS: Record<ClientType, string> = {
+  shoreline: 'Shoreline',
+  hudson:    'Hudson',
+  both:      'Shoreline + Hudson',
+}
+
+export const CLIENT_TYPE_COLOURS: Record<ClientType, string> = {
+  shoreline: 'bg-orange-100 text-orange-700',
+  hudson:    'bg-purple-100 text-purple-700',
+  both:      'bg-teal-100 text-teal-700',
 }
 
 /** Days until a date string (ISO). Negative = already past. */

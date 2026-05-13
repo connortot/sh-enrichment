@@ -4,8 +4,9 @@ import { useState, useTransition, useMemo, useEffect } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
-  type ParentCompany, type PipelineStatus,
+  type ParentCompany, type PipelineStatus, type ClientType,
   PIPELINE_LABELS, PIPELINE_COLOURS,
+  CLIENT_TYPE_LABELS, CLIENT_TYPE_COLOURS,
   urgencyTier, URGENCY_BADGE, URGENCY_LABEL, daysUntil,
 } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
@@ -27,7 +28,9 @@ function extractCountry(location: string | null): string | null {
   return parts[parts.length - 1].trim() || null
 }
 
-type SortField = 'name' | 'location' | 'urgent' | 'expiry' | 'vessels' | 'contacts' | 'prospect' | 'pipeline' | 'last_contact' | 'next_contact'
+const CLIENT_TYPES: ClientType[] = ['shoreline', 'hudson', 'both']
+
+type SortField = 'name' | 'location' | 'urgent' | 'expiry' | 'vessels' | 'contacts' | 'status' | 'last_contact' | 'next_contact'
 type SortDir   = 'asc' | 'desc'
 
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
@@ -73,7 +76,7 @@ export default function CompaniesTable({
   const [filterAsianScope,   setFilterAsianScope]   = useState<boolean>(searchParams.get('asian') !== 'false')
   const [filterStatus,       setFilterStatus]       = useState<string>(searchParams.get('status') ?? 'all')
   const [filterUrgency,      setFilterUrgency]      = useState<string>(searchParams.get('urgency') ?? 'all')
-  const [filterProspect,     setFilterProspect]     = useState<boolean>(searchParams.get('prospect') === 'true')
+  const [filterClientView,   setFilterClientView]   = useState<'all' | 'clients' | 'prospects'>((searchParams.get('view') as 'all' | 'clients' | 'prospects') ?? 'all')
   const [filterGtMin,        setFilterGtMin]        = useState<string>(searchParams.get('gtMin') ?? '')
   const [filterGtMax,        setFilterGtMax]        = useState<string>(searchParams.get('gtMax') ?? '')
   const [filterContactRoles, setFilterContactRoles] = useState<string[]>(parseCSVList(searchParams.get('roles')))
@@ -82,7 +85,7 @@ export default function CompaniesTable({
   const [search,             setSearch]             = useState(searchParams.get('q') ?? '')
 
   // --- sort state ---
-  const [sortField, setSortField] = useState<SortField>((searchParams.get('sort') as SortField) ?? 'expiry')
+  const [sortField, setSortField] = useState<SortField>((searchParams.get('sort') as SortField | null) ?? 'expiry')
   const [sortDir,   setSortDir]   = useState<SortDir>((searchParams.get('sortDir') as SortDir) ?? 'asc')
 
   // --- modal state ---
@@ -143,7 +146,8 @@ export default function CompaniesTable({
       if (filterAsianScope) {
         if (!isUnknown && !asianSet.has(c.id)) return false
       }
-      if (filterProspect && !c.is_prospect) return false
+      if (filterClientView === 'clients' && !c.client_type) return false
+      if (filterClientView === 'prospects' && c.client_type) return false
       if (filterStatus !== 'all' && c.pipeline_status !== filterStatus) return false
       if (filterUrgency !== 'all') {
         const tier = urgencyTier(c.soonest_expiry)
@@ -167,7 +171,7 @@ export default function CompaniesTable({
     })
   }, [
     companies, filterLocationVal, filterAsianScope, asianSet,
-    filterProspect, filterStatus, filterUrgency,
+    filterClientView, filterStatus, filterUrgency,
     filterGtMin, filterGtMax, filterContactRoles, filterFlags, filterOpLocs, search,
   ])
 
@@ -193,10 +197,10 @@ export default function CompaniesTable({
         cmp = (a.vessel_count ?? 0) - (b.vessel_count ?? 0)
       } else if (sortField === 'contacts') {
         cmp = (a.contact_count ?? 0) - (b.contact_count ?? 0)
-      } else if (sortField === 'prospect') {
-        cmp = (a.is_prospect === b.is_prospect) ? 0 : a.is_prospect ? -1 : 1
-      } else if (sortField === 'pipeline') {
-        cmp = a.pipeline_status.localeCompare(b.pipeline_status)
+      } else if (sortField === 'status') {
+        const aVal = a.client_type ? `0_${a.client_type}` : `1_${a.pipeline_status}`
+        const bVal = b.client_type ? `0_${b.client_type}` : `1_${b.pipeline_status}`
+        cmp = aVal.localeCompare(bVal)
       } else if (sortField === 'last_contact') {
         if (!a.last_contact_date && !b.last_contact_date) cmp = 0
         else if (!a.last_contact_date) cmp = 1
@@ -218,7 +222,7 @@ export default function CompaniesTable({
     if (search) params.set('q', search)
     if (filterLocationVal !== 'all') params.set('location', filterLocationVal)
     if (!filterAsianScope) params.set('asian', 'false')
-    if (filterProspect) params.set('prospect', 'true')
+    if (filterClientView !== 'all') params.set('view', filterClientView)
     if (filterStatus !== 'all') params.set('status', filterStatus)
     if (filterUrgency !== 'all') params.set('urgency', filterUrgency)
     if (filterGtMin) params.set('gtMin', filterGtMin)
@@ -231,16 +235,22 @@ export default function CompaniesTable({
     const qs = params.toString()
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }, [
-    search, filterLocationVal, filterAsianScope, filterProspect,
+    search, filterLocationVal, filterAsianScope, filterClientView,
     filterStatus, filterUrgency, filterGtMin, filterGtMax,
     filterContactRoles, filterFlags, filterOpLocs,
     sortField, sortDir, pathname,
   ])
 
   // --- mutations ---
-  async function updateStatus(id: string, value: PipelineStatus) {
+  async function updateClientStatus(id: string, value: string) {
     const supabase = createClient()
-    await supabase.from('parent_companies').update({ pipeline_status: value }).eq('id', id)
+    if ((CLIENT_TYPES as string[]).includes(value)) {
+      await supabase.from('parent_companies').update({ client_type: value }).eq('id', id)
+      setCompanies(cs => cs.map(c => c.id === id ? { ...c, client_type: value as ClientType } : c))
+    } else {
+      await supabase.from('parent_companies').update({ client_type: null, pipeline_status: value }).eq('id', id)
+      setCompanies(cs => cs.map(c => c.id === id ? { ...c, client_type: null, pipeline_status: value as PipelineStatus } : c))
+    }
     startTransition(() => router.refresh())
   }
 
@@ -248,12 +258,6 @@ export default function CompaniesTable({
     const supabase = createClient()
     await supabase.from('parent_companies').update({ [field]: value || null }).eq('id', id)
     startTransition(() => router.refresh())
-  }
-
-  async function updateProspect(id: string, value: boolean) {
-    const supabase = createClient()
-    await supabase.from('parent_companies').update({ is_prospect: value }).eq('id', id)
-    setCompanies(cs => cs.map(c => c.id === id ? { ...c, is_prospect: value } : c))
   }
 
   function formField(key: keyof CompanyFormData) {
@@ -385,17 +389,22 @@ export default function CompaniesTable({
             Asian Scope Only
           </button>
 
-          {/* Prospects Only toggle */}
-          <button
-            onClick={() => setFilterProspect(v => !v)}
-            className={`px-3 py-1.5 text-sm font-medium transition-colors border ${
-              filterProspect
-                ? 'bg-[#ACE2E1] text-[#3C3C3B] border-[#ACE2E1]'
-                : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'
-            }`}
-          >
-            Prospects Only
-          </button>
+          {/* Client / Prospect segmented filter */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1">
+            {(['all', 'prospects', 'clients'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setFilterClientView(v)}
+                className={`px-3 py-1 text-sm font-medium transition-colors ${
+                  filterClientView === v
+                    ? 'bg-white text-[#3C3C3B] shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                {v === 'all' ? 'All' : v === 'prospects' ? 'Prospects' : 'Existing Clients'}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Filters — row 2: advanced filters */}
@@ -468,8 +477,7 @@ export default function CompaniesTable({
                   <Th field="expiry"       label="Next COFR Expiry" />
                   <Th field="vessels"      label="Vessels" className="text-center" />
                   <Th field="contacts"     label="Contacts" className="text-center" />
-                  <Th field="prospect"     label="Prospect" className="text-center" />
-                  <Th field="pipeline"     label="Pipeline" />
+                  <Th field="status"       label="Status" />
                   <Th field="last_contact" label="Last Contact" />
                   <Th field="next_contact" label="Next Contact" />
                 </tr>
@@ -477,7 +485,7 @@ export default function CompaniesTable({
               <tbody className="divide-y divide-slate-100">
                 {sorted.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="text-center py-12 text-slate-400">
+                    <td colSpan={9} className="text-center py-12 text-slate-400">
                       No companies match your filters
                     </td>
                   </tr>
@@ -570,32 +578,30 @@ export default function CompaniesTable({
                         )}
                       </td>
 
-                      {/* Prospect toggle */}
-                      <td className="px-4 py-3 text-center">
-                        {!isUnknown && (
-                          <input
-                            type="checkbox"
-                            checked={c.is_prospect}
-                            onChange={e => updateProspect(c.id, e.target.checked)}
-                            className="w-4 h-4 accent-[#008DDA] cursor-pointer"
-                            title={c.is_prospect ? 'Marked as prospect' : 'Mark as prospect'}
-                          />
-                        )}
-                      </td>
-
-                      {/* Pipeline */}
+                      {/* Status (client type or pipeline) */}
                       <td className="px-4 py-3">
                         {isUnknown ? (
                           <span className="text-slate-400">—</span>
                         ) : (
                           <select
-                            value={c.pipeline_status}
-                            onChange={e => updateStatus(c.id, e.target.value as PipelineStatus)}
-                            className={`text-xs font-medium px-2 py-1 border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#008DDA] ${PIPELINE_COLOURS[c.pipeline_status]}`}
+                            value={c.client_type ?? c.pipeline_status}
+                            onChange={e => updateClientStatus(c.id, e.target.value)}
+                            className={`text-xs font-medium px-2 py-1 border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#008DDA] ${
+                              c.client_type
+                                ? CLIENT_TYPE_COLOURS[c.client_type]
+                                : PIPELINE_COLOURS[c.pipeline_status]
+                            }`}
                           >
-                            {STATUSES.map(s => (
-                              <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
-                            ))}
+                            <optgroup label="Existing Client">
+                              {CLIENT_TYPES.map(ct => (
+                                <option key={ct} value={ct}>{CLIENT_TYPE_LABELS[ct]}</option>
+                              ))}
+                            </optgroup>
+                            <optgroup label="Pipeline">
+                              {STATUSES.map(s => (
+                                <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
+                              ))}
+                            </optgroup>
                           </select>
                         )}
                       </td>
