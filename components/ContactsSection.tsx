@@ -14,6 +14,11 @@ const EMPTY_FORM: ContactFormData = {
   city: null, state: null, country: null,
 }
 
+function isSafeUrl(url: string | null): boolean {
+  if (!url) return false
+  try { return new URL(url).protocol === 'https:' } catch { return false }
+}
+
 type SortField = 'name' | 'title' | 'email' | 'linkedin' | 'location' | 'seniority'
 type SortDir   = 'asc' | 'desc'
 
@@ -255,9 +260,9 @@ export default function ContactsSection({
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        {c.linkedin_url ? (
+                        {isSafeUrl(c.linkedin_url) ? (
                           <a
-                            href={c.linkedin_url}
+                            href={c.linkedin_url!}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-[#008DDA] hover:text-[#006BB0] inline-flex items-center gap-1 text-xs"

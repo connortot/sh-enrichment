@@ -18,7 +18,7 @@ export default function Nav({ email }: { email: string }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
         <a href="/companies" className="flex items-center hover:opacity-80 transition-opacity">
           <img
-            src="https://shorelinehudson.com/wp-content/themes/shorelinehudson/src/images/svgs/logo-white.svg"
+            src="/logo-white.svg"
             alt="Logo"
             className="h-7 w-auto"
           />

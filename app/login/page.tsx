@@ -34,7 +34,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <img
-            src="https://shorelinehudson.com/wp-content/themes/shorelinehudson/src/images/svgs/logo-white.svg"
+            src="/logo-white.svg"
             alt="Logo"
             className="h-10 w-auto mx-auto mb-6"
           />
