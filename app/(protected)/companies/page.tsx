@@ -27,10 +27,10 @@ export default async function DashboardPage() {
 
   const [companies, vesselStats, vesselMeta, contactCounts, asianScope] = await Promise.all([
     fetchAll(supabase, 'parent_companies',      '*',  'name'),
-    fetchAll(supabase, 'company_vessel_stats',  '*'),
-    fetchAll(supabase, 'company_vessel_meta',   '*'),
-    fetchAll(supabase, 'company_contact_counts','*'),
-    fetchAll(supabase, 'asian_scope_companies', 'id'),
+    fetchAll(supabase, 'company_vessel_stats',  '*',  'parent_company_id'),
+    fetchAll(supabase, 'company_vessel_meta',   '*',  'parent_company_id'),
+    fetchAll(supabase, 'company_contact_counts','*',  'parent_company_id'),
+    fetchAll(supabase, 'asian_scope_companies', 'id', 'id'),
   ])
 
   const statsMap   = new Map(vesselStats.map((s:   any) => [s.parent_company_id, s]))
