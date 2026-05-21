@@ -125,10 +125,7 @@ export default function CompaniesTable({
   const allOpLocs = useMemo(() => {
     const locs = new Set<string>()
     for (const c of companies) {
-      c.vessel_op_locations?.forEach(l => {
-        const country = extractCountry(l)
-        if (country) locs.add(country)
-      })
+      c.vessel_op_locations?.forEach(l => locs.add(extractCountry(l) ?? 'Unknown'))
     }
     return Array.from(locs).sort()
   }, [companies])
@@ -170,7 +167,7 @@ export default function CompaniesTable({
         if (!c.vessel_flags?.some(f => filterFlags.includes(f))) return false
       }
       if (filterOpLocs.length > 0) {
-        if (!c.vessel_op_locations?.some(l => filterOpLocs.includes(extractCountry(l) ?? ''))) return false
+        if (!c.vessel_op_locations?.some(l => filterOpLocs.includes(extractCountry(l) ?? 'Unknown'))) return false
       }
       if (filterContactCountries.length > 0) {
         if (!c.contact_countries?.some(cc => filterContactCountries.includes(cc))) return false
