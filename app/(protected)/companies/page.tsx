@@ -51,6 +51,7 @@ export default async function DashboardPage() {
       vessel_flags:          (meta?.vessel_flags               ?? []) as string[],
       vessel_op_locations:   (meta?.vessel_op_locations        ?? []) as string[],
       contact_titles:        (contacts?.contact_titles         ?? []) as string[],
+      contact_countries:     (contacts?.contact_countries      ?? []) as string[],
     }
   })
 

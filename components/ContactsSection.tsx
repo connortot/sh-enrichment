@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { Contact } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 
-type ContactFormData = Omit<Contact, 'id' | 'parent_company_id' | 'created_at' | 'updated_at'>
+type ContactFormData = Omit<Contact, 'id' | 'parent_company_id' | 'role_tags' | 'created_at' | 'updated_at'>
 
 const EMPTY_FORM: ContactFormData = {
   first_name: null, last_name: null, title: null,
@@ -46,23 +46,32 @@ export default function ContactsSection({
   const locationOptions = useMemo(() => {
     const locs = new Set<string>()
     for (const c of contacts) {
-      const loc = [c.city, c.country].filter(Boolean).join(', ')
-      if (loc) locs.add(loc)
+      if (c.country) locs.add(c.country)
     }
     return [...locs].sort()
   }, [contacts])
 
-  const titleOptions = useMemo(() =>
-    [...new Set(contacts.map(c => c.title).filter(Boolean) as string[])].sort(),
-  [contacts])
+  const titleOptions = useMemo(() => {
+    const tags = new Set<string>()
+    for (const c of contacts) {
+      if (c.role_tags?.length) {
+        c.role_tags.forEach(t => tags.add(t))
+      } else if (c.title) {
+        tags.add(c.title)
+      }
+    }
+    return [...tags].sort()
+  }, [contacts])
 
   const visible = useMemo(() => {
     let list = contacts
     if (filterLocation !== 'all') {
-      list = list.filter(c => [c.city, c.country].filter(Boolean).join(', ') === filterLocation)
+      list = list.filter(c => c.country === filterLocation)
     }
     if (filterTitle !== 'all') {
-      list = list.filter(c => c.title === filterTitle)
+      list = list.filter(c =>
+        c.role_tags?.includes(filterTitle) ?? c.title === filterTitle
+      )
     }
     return list
   }, [contacts, filterLocation, filterTitle])
@@ -191,7 +200,7 @@ export default function ContactsSection({
                   onChange={e => setFilterLocation(e.target.value)}
                   className="px-3 py-1.5 text-xs border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white"
                 >
-                  <option value="all">All locations</option>
+                  <option value="all">All countries</option>
                   {locationOptions.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
               )}

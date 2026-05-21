@@ -31,6 +31,7 @@ export interface ParentCompany {
   vessel_flags?: string[]
   vessel_op_locations?: string[]
   contact_titles?: string[]
+  contact_countries?: string[]
 }
 
 export interface Vessel {
@@ -52,12 +53,20 @@ export interface Vessel {
   parent_company_id: string | null
 }
 
+/** Extracts the country (last comma-separated segment) from a location string. */
+export function extractCountry(location: string | null): string | null {
+  if (!location) return null
+  const parts = location.split(',')
+  return parts[parts.length - 1].trim() || null
+}
+
 export interface Contact {
   id: string
   parent_company_id: string
   first_name: string | null
   last_name: string | null
   title: string | null
+  role_tags: string[] | null
   email: string | null
   email_status: string | null
   seniority: string | null

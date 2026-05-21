@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import type { Vessel } from '@/lib/types'
-import { urgencyTier, URGENCY_BADGE, URGENCY_LABEL, daysUntil } from '@/lib/types'
+import { urgencyTier, URGENCY_BADGE, URGENCY_LABEL, daysUntil, extractCountry } from '@/lib/types'
 
 type SortField = 'name' | 'type' | 'gross_tonnage' | 'flag' | 'operator' | 'op_location' | 'effective' | 'expiry'
 type SortDir   = 'asc' | 'desc'
@@ -30,13 +30,13 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
 
   const flags     = useMemo(() => [...new Set(vessels.map(v => v.flag).filter(Boolean) as string[])].sort(), [vessels])
   const operators = useMemo(() => [...new Set(vessels.map(v => v.operator_name).filter(Boolean) as string[])].sort(), [vessels])
-  const opLocs    = useMemo(() => [...new Set(vessels.map(v => v.operator_location).filter(Boolean) as string[])].sort(), [vessels])
+  const opLocs    = useMemo(() => [...new Set(vessels.map(v => extractCountry(v.operator_location)).filter(Boolean) as string[])].sort(), [vessels])
 
   const visible = useMemo(() => {
     let list = vessels
     if (filterFlag     !== 'all') list = list.filter(v => v.flag === filterFlag)
     if (filterOperator !== 'all') list = list.filter(v => v.operator_name === filterOperator)
-    if (filterOpLoc    !== 'all') list = list.filter(v => v.operator_location === filterOpLoc)
+    if (filterOpLoc    !== 'all') list = list.filter(v => extractCountry(v.operator_location) === filterOpLoc)
     if (filterStatus   !== 'all') list = list.filter(v => urgencyTier(v.expiration_date) === filterStatus)
     return list
   }, [vessels, filterFlag, filterOperator, filterOpLoc, filterStatus])

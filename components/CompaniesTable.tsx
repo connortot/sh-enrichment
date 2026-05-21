@@ -7,7 +7,7 @@ import {
   type ParentCompany, type PipelineStatus, type ClientType,
   PIPELINE_LABELS, PIPELINE_COLOURS,
   CLIENT_TYPE_LABELS, CLIENT_TYPE_COLOURS,
-  urgencyTier, URGENCY_BADGE, URGENCY_LABEL, daysUntil,
+  urgencyTier, URGENCY_BADGE, URGENCY_LABEL, daysUntil, extractCountry,
 } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import MultiSelectDropdown from '@/components/MultiSelectDropdown'
@@ -21,12 +21,6 @@ const URGENCY_FILTERS = [
   { value: 'upcoming', label: 'Upcoming ≤180d' },
   { value: 'clear',    label: 'Clear' },
 ]
-
-function extractCountry(location: string | null): string | null {
-  if (!location) return null
-  const parts = location.split(',')
-  return parts[parts.length - 1].trim() || null
-}
 
 const CLIENT_TYPES: ClientType[] = ['shoreline', 'hudson', 'both']
 
@@ -79,9 +73,10 @@ export default function CompaniesTable({
   const [filterClientView,   setFilterClientView]   = useState<'all' | 'clients' | 'prospects'>((searchParams.get('view') as 'all' | 'clients' | 'prospects') ?? 'all')
   const [filterGtMin,        setFilterGtMin]        = useState<string>(searchParams.get('gtMin') ?? '')
   const [filterGtMax,        setFilterGtMax]        = useState<string>(searchParams.get('gtMax') ?? '')
-  const [filterContactRoles, setFilterContactRoles] = useState<string[]>(parseCSVList(searchParams.get('roles')))
-  const [filterFlags,        setFilterFlags]        = useState<string[]>(parseCSVList(searchParams.get('flags')))
-  const [filterOpLocs,       setFilterOpLocs]       = useState<string[]>(parseCSVList(searchParams.get('opLocs')))
+  const [filterContactRoles,     setFilterContactRoles]     = useState<string[]>(parseCSVList(searchParams.get('roles')))
+  const [filterFlags,            setFilterFlags]            = useState<string[]>(parseCSVList(searchParams.get('flags')))
+  const [filterOpLocs,           setFilterOpLocs]           = useState<string[]>(parseCSVList(searchParams.get('opLocs')))
+  const [filterContactCountries, setFilterContactCountries] = useState<string[]>(parseCSVList(searchParams.get('contactCountries')))
   const [search,             setSearch]             = useState(searchParams.get('q') ?? '')
 
   // --- sort state ---
@@ -129,8 +124,19 @@ export default function CompaniesTable({
 
   const allOpLocs = useMemo(() => {
     const locs = new Set<string>()
-    for (const c of companies) c.vessel_op_locations?.forEach(l => locs.add(l))
+    for (const c of companies) {
+      c.vessel_op_locations?.forEach(l => {
+        const country = extractCountry(l)
+        if (country) locs.add(country)
+      })
+    }
     return Array.from(locs).sort()
+  }, [companies])
+
+  const allContactCountries = useMemo(() => {
+    const countries = new Set<string>()
+    for (const c of companies) c.contact_countries?.forEach(cc => countries.add(cc))
+    return Array.from(countries).sort()
   }, [companies])
 
   // --- filtering ---
@@ -164,7 +170,10 @@ export default function CompaniesTable({
         if (!c.vessel_flags?.some(f => filterFlags.includes(f))) return false
       }
       if (filterOpLocs.length > 0) {
-        if (!c.vessel_op_locations?.some(l => filterOpLocs.includes(l))) return false
+        if (!c.vessel_op_locations?.some(l => filterOpLocs.includes(extractCountry(l) ?? ''))) return false
+      }
+      if (filterContactCountries.length > 0) {
+        if (!c.contact_countries?.some(cc => filterContactCountries.includes(cc))) return false
       }
       if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false
       return true
@@ -172,7 +181,8 @@ export default function CompaniesTable({
   }, [
     companies, filterLocationVal, filterAsianScope, asianSet,
     filterClientView, filterStatus, filterUrgency,
-    filterGtMin, filterGtMax, filterContactRoles, filterFlags, filterOpLocs, search,
+    filterGtMin, filterGtMax, filterContactRoles, filterFlags, filterOpLocs,
+    filterContactCountries, search,
   ])
 
   // --- sorting ---
@@ -230,6 +240,7 @@ export default function CompaniesTable({
     if (filterContactRoles.length > 0) params.set('roles', filterContactRoles.map(encodeURIComponent).join(','))
     if (filterFlags.length > 0) params.set('flags', filterFlags.map(encodeURIComponent).join(','))
     if (filterOpLocs.length > 0) params.set('opLocs', filterOpLocs.map(encodeURIComponent).join(','))
+    if (filterContactCountries.length > 0) params.set('contactCountries', filterContactCountries.map(encodeURIComponent).join(','))
     if (sortField !== 'expiry') params.set('sort', sortField)
     if (sortDir !== 'asc') params.set('sortDir', sortDir)
     const qs = params.toString()
@@ -237,7 +248,7 @@ export default function CompaniesTable({
   }, [
     search, filterLocationVal, filterAsianScope, filterClientView,
     filterStatus, filterUrgency, filterGtMin, filterGtMax,
-    filterContactRoles, filterFlags, filterOpLocs,
+    filterContactRoles, filterFlags, filterOpLocs, filterContactCountries,
     sortField, sortDir, pathname,
   ])
 
@@ -284,7 +295,7 @@ export default function CompaniesTable({
       setCompanies(cs => [...cs, {
         ...data,
         vessel_count: 0, urgent_vessel_count: 0, soonest_expiry: null,
-        vessel_gross_tonnages: [], vessel_flags: [], vessel_op_locations: [], contact_titles: [],
+        vessel_gross_tonnages: [], vessel_flags: [], vessel_op_locations: [], contact_titles: [], contact_countries: [],
       }])
     }
     setAdding(false)
@@ -305,7 +316,7 @@ export default function CompaniesTable({
     )
   }
 
-  const hasAdvancedFilters = filterGtMin || filterGtMax || filterContactRoles.length > 0 || filterFlags.length > 0 || filterOpLocs.length > 0
+  const hasAdvancedFilters = filterGtMin || filterGtMax || filterContactRoles.length > 0 || filterFlags.length > 0 || filterOpLocs.length > 0 || filterContactCountries.length > 0
 
   return (
     <>
@@ -448,6 +459,12 @@ export default function CompaniesTable({
             selected={filterOpLocs}
             onChange={setFilterOpLocs}
           />
+          <MultiSelectDropdown
+            label="contact countries"
+            options={allContactCountries}
+            selected={filterContactCountries}
+            onChange={setFilterContactCountries}
+          />
 
           {hasAdvancedFilters && (
             <button
@@ -457,6 +474,7 @@ export default function CompaniesTable({
                 setFilterContactRoles([])
                 setFilterFlags([])
                 setFilterOpLocs([])
+                setFilterContactCountries([])
               }}
               className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
             >
