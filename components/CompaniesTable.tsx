@@ -11,6 +11,12 @@ import {
 } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import MultiSelectDropdown from '@/components/MultiSelectDropdown'
+import ScopeDropdown from '@/components/ScopeDropdown'
+
+const SCOPE_OPTIONS = [
+  { value: 'all',   label: 'All Companies' },
+  { value: 'asian', label: 'Asian Scope Only' },
+]
 
 const STATUSES = Object.keys(PIPELINE_LABELS) as PipelineStatus[]
 
@@ -67,7 +73,9 @@ export default function CompaniesTable({
 
   // --- filter state ---
   const [filterLocationVal,  setFilterLocationVal]  = useState<string>(searchParams.get('location') ?? 'all')
-  const [filterAsianScope,   setFilterAsianScope]   = useState<boolean>(searchParams.get('asian') !== 'false')
+  const [filterScope,        setFilterScope]        = useState<string>(
+    searchParams.get('scope') ?? (searchParams.get('asian') === 'false' ? 'all' : 'asian')
+  )
   const [filterStatus,       setFilterStatus]       = useState<string>(searchParams.get('status') ?? 'all')
   const [filterUrgency,      setFilterUrgency]      = useState<string>(searchParams.get('urgency') ?? 'all')
   const [filterClientView,   setFilterClientView]   = useState<'all' | 'clients' | 'prospects'>((searchParams.get('view') as 'all' | 'clients' | 'prospects') ?? 'all')
@@ -146,7 +154,7 @@ export default function CompaniesTable({
       if (filterLocationVal !== 'all') {
         if (!isUnknown && extractCountry(c.location) !== filterLocationVal) return false
       }
-      if (filterAsianScope) {
+      if (filterScope === 'asian') {
         if (!isUnknown && !asianSet.has(c.id)) return false
       }
       if (filterClientView === 'clients' && !c.client_type) return false
@@ -176,7 +184,7 @@ export default function CompaniesTable({
       return true
     })
   }, [
-    companies, filterLocationVal, filterAsianScope, asianSet,
+    companies, filterLocationVal, filterScope, asianSet,
     filterClientView, filterStatus, filterUrgency,
     filterGtMin, filterGtMax, filterContactRoles, filterFlags, filterOpLocs,
     filterContactCountries, search,
@@ -228,7 +236,7 @@ export default function CompaniesTable({
     const params = new URLSearchParams()
     if (search) params.set('q', search)
     if (filterLocationVal !== 'all') params.set('location', filterLocationVal)
-    if (!filterAsianScope) params.set('asian', 'false')
+    if (filterScope !== 'asian') params.set('scope', filterScope)
     if (filterClientView !== 'all') params.set('view', filterClientView)
     if (filterStatus !== 'all') params.set('status', filterStatus)
     if (filterUrgency !== 'all') params.set('urgency', filterUrgency)
@@ -243,7 +251,7 @@ export default function CompaniesTable({
     const qs = params.toString()
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }, [
-    search, filterLocationVal, filterAsianScope, filterClientView,
+    search, filterLocationVal, filterScope, filterClientView,
     filterStatus, filterUrgency, filterGtMin, filterGtMax,
     filterContactRoles, filterFlags, filterOpLocs, filterContactCountries,
     sortField, sortDir, pathname,
@@ -385,17 +393,12 @@ export default function CompaniesTable({
             ))}
           </div>
 
-          {/* Asian scope toggle */}
-          <button
-            onClick={() => setFilterAsianScope(v => !v)}
-            className={`px-3 py-1.5 text-sm font-medium transition-colors border ${
-              filterAsianScope
-                ? 'bg-[#ACE2E1] text-[#3C3C3B] border-[#ACE2E1]'
-                : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'
-            }`}
-          >
-            Asian Scope Only
-          </button>
+          {/* Scope filter */}
+          <ScopeDropdown
+            options={SCOPE_OPTIONS}
+            selected={filterScope}
+            onChange={setFilterScope}
+          />
 
           {/* Client / Prospect segmented filter */}
           <div className="flex items-center gap-1 bg-slate-100 p-1">
