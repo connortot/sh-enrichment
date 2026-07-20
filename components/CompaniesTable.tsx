@@ -16,6 +16,7 @@ import ScopeDropdown from '@/components/ScopeDropdown'
 const SCOPE_OPTIONS = [
   { value: 'all',   label: 'All Companies' },
   { value: 'asian', label: 'Asian Scope Only' },
+  { value: 'greek', label: 'Greek Scope Only' },
 ]
 
 const STATUSES = Object.keys(PIPELINE_LABELS) as PipelineStatus[]
@@ -61,9 +62,11 @@ function parseCSVList(val: string | null): string[] {
 export default function CompaniesTable({
   initialCompanies,
   asianScopeIds,
+  greekScopeIds,
 }: {
   initialCompanies: ParentCompany[]
   asianScopeIds: string[]
+  greekScopeIds: string[]
 }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -97,6 +100,7 @@ export default function CompaniesTable({
   const [adding,       setAdding]       = useState(false)
 
   const asianSet = useMemo(() => new Set(asianScopeIds), [asianScopeIds])
+  const greekSet = useMemo(() => new Set(greekScopeIds), [greekScopeIds])
 
   function handleSort(field: SortField) {
     if (field === sortField) {
@@ -157,6 +161,9 @@ export default function CompaniesTable({
       if (filterScope === 'asian') {
         if (!isUnknown && !asianSet.has(c.id)) return false
       }
+      if (filterScope === 'greek') {
+        if (!isUnknown && !greekSet.has(c.id)) return false
+      }
       if (filterClientView === 'clients' && !c.client_type) return false
       if (filterClientView === 'prospects' && c.client_type) return false
       if (filterStatus !== 'all' && c.pipeline_status !== filterStatus) return false
@@ -184,7 +191,7 @@ export default function CompaniesTable({
       return true
     })
   }, [
-    companies, filterLocationVal, filterScope, asianSet,
+    companies, filterLocationVal, filterScope, asianSet, greekSet,
     filterClientView, filterStatus, filterUrgency,
     filterGtMin, filterGtMax, filterContactRoles, filterFlags, filterOpLocs,
     filterContactCountries, search,
