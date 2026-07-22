@@ -11,6 +11,7 @@ import {
 } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import MultiSelectDropdown from '@/components/MultiSelectDropdown'
+import SearchableSelect from '@/components/SearchableSelect'
 import ScopeDropdown from '@/components/ScopeDropdown'
 
 const SCOPE_OPTIONS = [
@@ -76,9 +77,7 @@ export default function CompaniesTable({
 
   // --- filter state ---
   const [filterLocationVal,  setFilterLocationVal]  = useState<string>(searchParams.get('location') ?? 'all')
-  const [filterScope,        setFilterScope]        = useState<string>(
-    searchParams.get('scope') ?? (searchParams.get('asian') === 'false' ? 'all' : 'asian')
-  )
+  const [filterScope,        setFilterScope]        = useState<string>(searchParams.get('scope') ?? 'all')
   const [filterStatus,       setFilterStatus]       = useState<string>(searchParams.get('status') ?? 'all')
   const [filterUrgency,      setFilterUrgency]      = useState<string>(searchParams.get('urgency') ?? 'all')
   const [filterClientView,   setFilterClientView]   = useState<'all' | 'clients' | 'prospects'>((searchParams.get('view') as 'all' | 'clients' | 'prospects') ?? 'all')
@@ -243,7 +242,7 @@ export default function CompaniesTable({
     const params = new URLSearchParams()
     if (search) params.set('q', search)
     if (filterLocationVal !== 'all') params.set('location', filterLocationVal)
-    if (filterScope !== 'asian') params.set('scope', filterScope)
+    if (filterScope !== 'all') params.set('scope', filterScope)
     if (filterClientView !== 'all') params.set('view', filterClientView)
     if (filterStatus !== 'all') params.set('status', filterStatus)
     if (filterUrgency !== 'all') params.set('urgency', filterUrgency)
@@ -360,16 +359,12 @@ export default function CompaniesTable({
           />
 
           {/* Location dropdown */}
-          <select
+          <SearchableSelect
+            label="locations"
+            options={locations}
             value={filterLocationVal}
-            onChange={e => setFilterLocationVal(e.target.value)}
-            className="px-3 py-2 text-sm border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white"
-          >
-            <option value="all">All locations</option>
-            {locations.map(loc => (
-              <option key={loc} value={loc}>{loc}</option>
-            ))}
-          </select>
+            onChange={setFilterLocationVal}
+          />
 
           {/* Pipeline status */}
           <select

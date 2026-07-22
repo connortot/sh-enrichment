@@ -5,11 +5,11 @@ import { useState, useEffect, useRef } from 'react'
 interface Props {
   label: string
   options: string[]
-  selected: string[]
-  onChange: (value: string[]) => void
+  value: string
+  onChange: (value: string) => void
 }
 
-export default function MultiSelectDropdown({ label, options, selected, onChange }: Props) {
+export default function SearchableSelect({ label, options, value, onChange }: Props) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const ref = useRef<HTMLDivElement>(null)
@@ -25,22 +25,17 @@ export default function MultiSelectDropdown({ label, options, selected, onChange
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  function toggle(value: string) {
-    if (selected.includes(value)) {
-      onChange(selected.filter(v => v !== value))
-    } else {
-      onChange([...selected, value])
-    }
+  function select(opt: string) {
+    onChange(opt)
+    setOpen(false)
+    setQuery('')
   }
-
-  const buttonLabel =
-    selected.length === 0 ? `All ${label}`
-    : selected.length === 1 ? selected[0]
-    : `${selected.length} ${label} selected`
 
   const filteredOptions = query.trim()
     ? options.filter(opt => opt.toLowerCase().includes(query.trim().toLowerCase()))
     : options
+
+  const buttonLabel = value === 'all' ? `All ${label}` : value
 
   if (options.length === 0) return null
 
@@ -50,7 +45,7 @@ export default function MultiSelectDropdown({ label, options, selected, onChange
         type="button"
         onClick={() => setOpen(v => !v)}
         className={`px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-[#008DDA] bg-white flex items-center gap-1.5 whitespace-nowrap ${
-          selected.length > 0 ? 'border-[#008DDA] text-[#008DDA]' : 'border-slate-300 text-slate-700'
+          value !== 'all' ? 'border-[#008DDA] text-[#008DDA]' : 'border-slate-300 text-slate-700'
         }`}
       >
         {buttonLabel}
@@ -71,33 +66,23 @@ export default function MultiSelectDropdown({ label, options, selected, onChange
               />
             </div>
           )}
-          {selected.length > 0 && (
-            <div className="px-3 py-1.5 border-b border-slate-100">
-              <button
-                type="button"
-                onClick={() => onChange([])}
-                className="text-xs text-slate-400 hover:text-slate-600"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
+          <div
+            onClick={() => select('all')}
+            className={`px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm ${value === 'all' ? 'font-medium text-[#008DDA]' : 'text-slate-700'}`}
+          >
+            All {label}
+          </div>
           {filteredOptions.length === 0 && (
             <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
           )}
           {filteredOptions.map(opt => (
-            <label
+            <div
               key={opt}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm text-slate-700"
+              onClick={() => select(opt)}
+              className={`px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm ${value === opt ? 'font-medium text-[#008DDA]' : 'text-slate-700'}`}
             >
-              <input
-                type="checkbox"
-                checked={selected.includes(opt)}
-                onChange={() => toggle(opt)}
-                className="accent-[#008DDA]"
-              />
               {opt}
-            </label>
+            </div>
           ))}
         </div>
       )}

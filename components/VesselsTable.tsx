@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import type { Vessel } from '@/lib/types'
 import { urgencyTier, URGENCY_BADGE, URGENCY_LABEL, daysUntil, extractCountry } from '@/lib/types'
+import { createClient } from '@/lib/supabase/client'
 
-type SortField = 'name' | 'type' | 'gross_tonnage' | 'flag' | 'operator' | 'op_location' | 'effective' | 'expiry'
+type SortField = 'name' | 'type' | 'gross_tonnage' | 'flag' | 'operator' | 'op_location' | 'renewal' | 'effective' | 'expiry'
 type SortDir   = 'asc' | 'desc'
 
 const STATUS_FILTERS: { value: string; label: string }[] = [
@@ -21,6 +23,8 @@ function SortIcon({ field, active, dir }: { field: string; active: boolean; dir:
 }
 
 export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
+  const router = useRouter()
+  const [, startTransition] = useTransition()
   const [filterFlag,     setFilterFlag]     = useState('all')
   const [filterOperator, setFilterOperator] = useState('all')
   const [filterOpLoc,    setFilterOpLoc]    = useState('all')
@@ -56,6 +60,11 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
         cmp = (a.operator_name ?? '').localeCompare(b.operator_name ?? '')
       } else if (sortField === 'op_location') {
         cmp = (a.operator_location ?? '').localeCompare(b.operator_location ?? '')
+      } else if (sortField === 'renewal') {
+        if (!a.cofr_renewal_date && !b.cofr_renewal_date) cmp = 0
+        else if (!a.cofr_renewal_date) cmp = 1
+        else if (!b.cofr_renewal_date) cmp = -1
+        else cmp = a.cofr_renewal_date.localeCompare(b.cofr_renewal_date)
       } else if (sortField === 'effective') {
         if (!a.effective_date && !b.effective_date) cmp = 0
         else if (!a.effective_date) cmp = 1
@@ -70,6 +79,12 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
       return sortDir === 'asc' ? cmp : -cmp
     })
   }, [visible, sortField, sortDir])
+
+  async function updateRenewal(vesselId: string, value: string) {
+    const supabase = createClient()
+    await supabase.from('vessels').update({ cofr_renewal_date: value || null }).eq('id', vesselId)
+    startTransition(() => router.refresh())
+  }
 
   function handleSort(field: SortField) {
     if (field === sortField) {
@@ -169,6 +184,7 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
                 <Th field="flag"          label="Flag" />
                 <Th field="operator"      label="Operator" />
                 <Th field="op_location"   label="Op. Location" />
+                <Th field="renewal"       label="COFR Renewal" />
                 <Th field="effective"     label="COFR Effective" />
                 <Th field="expiry"        label="COFR Expiry" />
               </tr>
@@ -176,7 +192,7 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
             <tbody className="divide-y divide-slate-100">
               {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="text-center py-8 text-slate-400 text-sm">
+                  <td colSpan={9} className="text-center py-8 text-slate-400 text-sm">
                     No vessels match your filters
                   </td>
                 </tr>
@@ -202,6 +218,14 @@ export default function VesselsTable({ vessels }: { vessels: Vessel[] }) {
                     </td>
                     <td className="px-4 py-3 text-slate-600 max-w-36 truncate" title={v.operator_location ?? ''}>
                       {v.operator_location ?? '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="date"
+                        defaultValue={v.cofr_renewal_date ?? ''}
+                        onBlur={e => updateRenewal(v.id, e.target.value)}
+                        className="text-sm px-2 py-1 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA]"
+                      />
                     </td>
                     <td className="px-4 py-3 text-slate-600">
                       {v.effective_date

@@ -2,19 +2,12 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  type ParentCompany, type PipelineStatus,
-  PIPELINE_LABELS, PIPELINE_COLOURS,
-} from '@/lib/types'
+import { type ParentCompany } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
-
-const STATUSES = Object.keys(PIPELINE_LABELS) as PipelineStatus[]
 
 type EditForm = {
   name: string
   location: string
-  pipeline_status: PipelineStatus
-  notes: string
 }
 
 export default function CompanyActions({ company }: { company: ParentCompany }) {
@@ -27,8 +20,6 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
   const [editForm, setEditForm]   = useState<EditForm>({
     name:            company.name,
     location:        company.location ?? '',
-    pipeline_status: company.pipeline_status,
-    notes:           company.notes ?? '',
   })
 
   function field(key: keyof EditForm) {
@@ -41,10 +32,8 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
     setSaving(true)
     const supabase = createClient()
     await supabase.from('parent_companies').update({
-      name:            editForm.name.trim(),
-      location:        editForm.location || null,
-      pipeline_status: editForm.pipeline_status,
-      notes:           editForm.notes || null,
+      name:     editForm.name.trim(),
+      location: editForm.location || null,
     }).eq('id', company.id)
     setSaving(false)
     setShowEdit(false)
@@ -99,28 +88,6 @@ export default function CompanyActions({ company }: { company: ParentCompany }) 
                   onChange={field('location')}
                   placeholder="e.g. Tokyo, Japan"
                   className="w-full text-sm px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA]"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Pipeline Status</label>
-                <select
-                  value={editForm.pipeline_status}
-                  onChange={field('pipeline_status')}
-                  className={`w-full text-sm font-medium px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-[#008DDA] ${PIPELINE_COLOURS[editForm.pipeline_status]}`}
-                >
-                  {STATUSES.map(s => (
-                    <option key={s} value={s}>{PIPELINE_LABELS[s]}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Notes</label>
-                <textarea
-                  value={editForm.notes}
-                  onChange={field('notes')}
-                  rows={3}
-                  placeholder="Add notes…"
-                  className="w-full text-sm px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#008DDA] resize-none"
                 />
               </div>
             </div>

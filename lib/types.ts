@@ -47,6 +47,7 @@ export interface Vessel {
   operator_location: string | null
   effective_date: string | null
   expiration_date: string | null
+  cofr_renewal_date: string | null
   insurance_cancel_flag: boolean
   flag: string | null
   needs_review: boolean
