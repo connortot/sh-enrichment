@@ -15,9 +15,11 @@ import SearchableSelect from '@/components/SearchableSelect'
 import ScopeDropdown from '@/components/ScopeDropdown'
 
 const SCOPE_OPTIONS = [
-  { value: 'all',   label: 'All Companies' },
-  { value: 'asian', label: 'Asian Scope Only' },
-  { value: 'greek', label: 'Greek Scope Only' },
+  { value: 'all',       label: 'All Companies' },
+  { value: 'asian',     label: 'Asian Scope Only' },
+  { value: 'greek',     label: 'Greek Scope Only' },
+  { value: 'nw_europe', label: 'NW Europe Scope Only' },
+  { value: 'nordic',    label: 'Nordic Scope Only' },
 ]
 
 const STATUSES = Object.keys(PIPELINE_LABELS) as PipelineStatus[]
@@ -64,10 +66,14 @@ export default function CompaniesTable({
   initialCompanies,
   asianScopeIds,
   greekScopeIds,
+  nwEuropeScopeIds,
+  nordicScopeIds,
 }: {
   initialCompanies: ParentCompany[]
   asianScopeIds: string[]
   greekScopeIds: string[]
+  nwEuropeScopeIds: string[]
+  nordicScopeIds: string[]
 }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -100,6 +106,8 @@ export default function CompaniesTable({
 
   const asianSet = useMemo(() => new Set(asianScopeIds), [asianScopeIds])
   const greekSet = useMemo(() => new Set(greekScopeIds), [greekScopeIds])
+  const nwEuropeSet = useMemo(() => new Set(nwEuropeScopeIds), [nwEuropeScopeIds])
+  const nordicSet = useMemo(() => new Set(nordicScopeIds), [nordicScopeIds])
 
   function handleSort(field: SortField) {
     if (field === sortField) {
@@ -163,6 +171,12 @@ export default function CompaniesTable({
       if (filterScope === 'greek') {
         if (!isUnknown && !greekSet.has(c.id)) return false
       }
+      if (filterScope === 'nw_europe') {
+        if (!isUnknown && !nwEuropeSet.has(c.id)) return false
+      }
+      if (filterScope === 'nordic') {
+        if (!isUnknown && !nordicSet.has(c.id)) return false
+      }
       if (filterClientView === 'clients' && !c.client_type) return false
       if (filterClientView === 'prospects' && c.client_type) return false
       if (filterStatus !== 'all' && c.pipeline_status !== filterStatus) return false
@@ -190,7 +204,7 @@ export default function CompaniesTable({
       return true
     })
   }, [
-    companies, filterLocationVal, filterScope, asianSet, greekSet,
+    companies, filterLocationVal, filterScope, asianSet, greekSet, nwEuropeSet, nordicSet,
     filterClientView, filterStatus, filterUrgency,
     filterGtMin, filterGtMax, filterContactRoles, filterFlags, filterOpLocs,
     filterContactCountries, search,

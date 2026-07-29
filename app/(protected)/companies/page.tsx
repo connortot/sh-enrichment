@@ -25,13 +25,15 @@ async function fetchAll(supabase: SupabaseClient, table: string, select: string,
 export default async function DashboardPage() {
   const supabase = await createClient()
 
-  const [companies, vesselStats, vesselMeta, contactCounts, asianScope, greekScope] = await Promise.all([
+  const [companies, vesselStats, vesselMeta, contactCounts, asianScope, greekScope, nwEuropeScope, nordicScope] = await Promise.all([
     fetchAll(supabase, 'parent_companies',      '*',  'name'),
     fetchAll(supabase, 'company_vessel_stats',  '*',  'parent_company_id'),
     fetchAll(supabase, 'company_vessel_meta',   '*',  'parent_company_id'),
     fetchAll(supabase, 'company_contact_counts','*',  'parent_company_id'),
     fetchAll(supabase, 'asian_scope_companies', 'id', 'id'),
     fetchAll(supabase, 'greek_scope_companies', 'id', 'id'),
+    fetchAll(supabase, 'nw_europe_scope_companies', 'id', 'id'),
+    fetchAll(supabase, 'nordic_scope_companies', 'id', 'id'),
   ])
 
   const statsMap   = new Map(vesselStats.map((s:   any) => [s.parent_company_id, s]))
@@ -58,10 +60,12 @@ export default async function DashboardPage() {
 
   const asianScopeIds = (asianScope ?? []).map(r => r.id)
   const greekScopeIds = (greekScope ?? []).map(r => r.id)
+  const nwEuropeScopeIds = (nwEuropeScope ?? []).map(r => r.id)
+  const nordicScopeIds = (nordicScope ?? []).map(r => r.id)
 
   return (
     <Suspense>
-      <CompaniesTable initialCompanies={enriched} asianScopeIds={asianScopeIds} greekScopeIds={greekScopeIds} />
+      <CompaniesTable initialCompanies={enriched} asianScopeIds={asianScopeIds} greekScopeIds={greekScopeIds} nwEuropeScopeIds={nwEuropeScopeIds} nordicScopeIds={nordicScopeIds} />
     </Suspense>
   )
 }
